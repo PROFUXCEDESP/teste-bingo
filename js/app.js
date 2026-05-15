@@ -1,176 +1,68 @@
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // --- UTILITÁRIOS ---
-    function textoIgual(t1, t2) {
-        if(!t1 || !t2) return false;
-        return t1.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() === 
-               t2.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-    }
-
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
-    const userName = localStorage.getItem('usuarioLogado') || 'Administrador';
-    
-    // --- ESTADO GLOBAL ---
-    window.todosEducandosBD = [];
-    window.caixaGlobalBD = [];
-    window.logsBD = [];
-    
-    // Paginação
-    window.paginacao = {
-        minhaTurma: 0,
-        gestaoLotes: 0,
-        rankingGeral: 0,
-        livroCaixa: 0,
-        logs: 0,
-        itensPorPagina: 10
-    };
-    window.totalItensTelas = {};
-
-    // --- MOTOR DE PAGINAÇÃO ---
-    window.gerarControlesPaginacao = function(chave, totalItens) {
-        window.totalItensTelas[chave] = totalItens;
-        const totalPaginas = Math.ceil(totalItens / window.paginacao.itensPorPagina);
-        if (totalPaginas <= 1) return "";
-        const pgAtual = window.paginacao[chave] + 1;
-
-        return `
-            <div class="paginacao-container" style="display:flex; justify-content:center; align-items:center; gap:10px; padding:15px; border-top:1px solid #eee;">
-                <button class="btn-secondary" ${pgAtual === 1 ? 'disabled' : ''} onclick="window.mudarPagina('${chave}', -1)"> < </button>
-                <div style="display:flex; align-items:center; gap:5px;">
-                    <span>Pág.</span>
-                    <input type="number" value="${pgAtual}" min="1" max="${totalPaginas}" 
-                           style="width:45px; text-align:center; border:1px solid var(--petal-pink); border-radius:4px;"
-                           onchange="window.irParaPagina('${chave}', this.value - 1)">
-                    <span>de ${totalPaginas}</span>
-                </div>
-                <button class="btn-secondary" ${pgAtual >= totalPaginas ? 'disabled' : ''} onclick="window.mudarPagina('${chave}', 1)"> > </button>
-            </div>`;
-    };
-
-    window.mudarPagina = function(chave, direcao) {
-        window.paginacao[chave] += direcao;
-        renderizarTabelas();
-    };
-
-    window.irParaPagina = function(chave, novaPagina) {
-        const totalPaginas = Math.ceil(window.totalItensTelas[chave] / window.paginacao.itensPorPagina);
-        if (novaPagina >= 0 && novaPagina < totalPaginas) {
-            window.paginacao[chave] = novaPagina;
-        } else {
-            window.paginacao[chave] = 0;
-        }
-        renderizarTabelas();
-    };
-
-    // --- RENDERIZAÇÃO ---
-    function renderizarTabelas() {
-        if(document.getElementById("adminPage")) window.atualizarDashboardsADM();
-        if(document.getElementById("educadorPage")) window.atualizarDashboardEducador();
-    }
-
-    // --- LÓGICA DE RANKING PADRONIZADA ---
-    window.gerarLinhaRanking = function(aluno, pos, indexGlobal) {
-        // Exemplo simples de cálculo de recompensas (ajuste conforme sua regra)
-        const vend = aluno.lotesVendidos?.length || 0;
-        const pend = aluno.lotesPendentes?.length || 0;
-        const total = vend + pend;
-        
-        return `
-            <tr>
-                <td class="td-center">${pos}</td>
-                <td><img src="${aluno.foto || 'assets/image/default.png'}" class="table-avatar"></td>
-                <td><strong>${aluno.nome}</strong><br><small>${aluno.turma}</small></td>
-                <td class="td-center">${total}</td>
-                <td class="td-center highlight-purple">${vend}</td>
-                <td class="td-center">${pend}</td>
-                <td class="td-center">${vend >= 5 ? Math.floor(vend/5) : '-'}</td>
-                <td class="td-center">${vend >= 10 ? '🎁' : '-'}</td>
-            </tr>`;
-    };
-
-    // --- ATUALIZAÇÃO ADMIN ---
-    window.atualizarDashboardsADM = function() {
-        // Gestão de Lotes com Busca
-        const termoLotes = document.getElementById('buscaLotesAdm')?.value.toLowerCase() || "";
-        const filtradosLotes = window.todosEducandosBD.filter(a => 
-            (a.lotesPendentes?.length > 0) && (a.nome.toLowerCase().includes(termoLotes) || a.turma.toLowerCase().includes(termoLotes))
-        );
-        
-        const tbodyLotes = document.getElementById("tabelaGestaoLotes");
-        if(tbodyLotes) {
-            const inicio = window.paginacao.gestaoLotes * window.paginacao.itensPorPagina;
-            const slice = filtradosLotes.slice(inicio, inicio + window.paginacao.itensPorPagina);
-            tbodyLotes.innerHTML = slice.map(aluno => `
-                <tr>
-                    <td><strong>${aluno.nome}</strong></td>
-                    <td>${aluno.turma}</td>
-                    <td class="td-center">${aluno.lotesPendentes.length}</td>
-                    <td class="td-center"><button class="btn-primary" onclick="abrirAcoes('${aluno.nome}')">Gerenciar</button></td>
-                </tr>`).join('');
-            
-            const cont = tbodyLotes.closest('.table-container');
-            if(cont.querySelector('.paginacao-container')) cont.querySelector('.paginacao-container').remove();
-            cont.insertAdjacentHTML('beforeend', window.gerarControlesPaginacao('gestaoLotes', filtradosLotes.length));
-        }
-
-        // Ranking ADM
-        const tbodyRank = document.getElementById("tabelaRankingAlunos");
-        if(tbodyRank) {
-            const listRank = [...window.todosEducandosBD].sort((a,b) => (b.lotesVendidos?.length || 0) - (a.lotesVendidos?.length || 0));
-            const inicio = window.paginacao.rankingGeral * window.paginacao.itensPorPagina;
-            tbodyRank.innerHTML = listRank.slice(inicio, inicio + window.paginacao.itensPorPagina)
-                                          .map((a, i) => window.gerarLinhaRanking(a, inicio + i + 1)).join('');
-            
-            const cont = tbodyRank.closest('.table-container');
-            if(cont.querySelector('.paginacao-container')) cont.querySelector('.paginacao-container').remove();
-            cont.insertAdjacentHTML('beforeend', window.gerarControlesPaginacao('rankingGeral', listRank.length));
-        }
-    };
-
-    // --- ATUALIZAÇÃO EDUCADOR ---
-    window.atualizarDashboardEducador = function() {
-        const termoBusca = document.getElementById('buscaNomeAluno')?.value.toLowerCase() || "";
-        
-        // Minha Turma (Filtro por Professor + Busca)
-        const minhaTurma = window.todosEducandosBD.filter(a => 
-            textoIgual(a.educadorResponsavel, userName) && a.nome.toLowerCase().includes(termoBusca)
-        );
-
-        const tbodyTurma = document.getElementById("tabelaAlunos");
-        if(tbodyTurma) {
-            const inicio = window.paginacao.minhaTurma * window.paginacao.itensPorPagina;
-            tbodyTurma.innerHTML = minhaTurma.slice(inicio, inicio + window.paginacao.itensPorPagina)
-                                             .map((a, i) => window.gerarLinhaRanking(a, inicio + i + 1)).join('');
-            
-            const cont = tbodyTurma.closest('.table-container');
-            if(cont.querySelector('.paginacao-container')) cont.querySelector('.paginacao-container').remove();
-            cont.insertAdjacentHTML('beforeend', window.gerarControlesPaginacao('minhaTurma', minhaTurma.length));
-        }
-
-        // Ranking Geral no Educador (Igual ao ADM)
-        const tbodyRankEdu = document.getElementById("tabelaRankingEducador");
-        if(tbodyRankEdu) {
-            const listRank = [...window.todosEducandosBD].sort((a,b) => (b.lotesVendidos?.length || 0) - (a.lotesVendidos?.length || 0));
-            const inicio = window.paginacao.rankingGeral * window.paginacao.itensPorPagina;
-            tbodyRankEdu.innerHTML = listRank.slice(inicio, inicio + window.paginacao.itensPorPagina)
-                                             .map((a, i) => window.gerarLinhaRanking(a, inicio + i + 1)).join('');
-            
-            const cont = tbodyRankEdu.closest('.table-container');
-            if(cont.querySelector('.paginacao-container')) cont.querySelector('.paginacao-container').remove();
-            cont.insertAdjacentHTML('beforeend', window.gerarControlesPaginacao('rankingGeral', listRank.length));
-        }
-    };
-
-    // --- CARGA INICIAL ---
-    window.carregarDados = function() {
-        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'sincronizar_dados' }) })
-            .then(r => r.json()).then(data => {
-                if(data.success) {
-                    window.todosEducandosBD = data.educandos;
-                    renderizarTabelas();
-                }
-            });
-    };
-
-    window.carregarDados();
-});
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEDESP Bingo - Administração</title>
+    <link rel="icon" href="assets/image/logo_cedesp.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+    <style>
+        .purple-input { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc; color: var(--dim-grey); font-size: 1rem; outline: none; transition: all 0.3s ease; }
+        .purple-input:focus { border-color: var(--petal-pink) !important; box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2) !important; }
+        .paginacao-container { display: flex; justify-content: center; align-items: center; padding: 15px; gap: 10px; background: #fdfdfd; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }
+        .paginacao-input { width: 45px; padding: 4px; text-align: center; border: 1px solid var(--petal-pink); border-radius: 4px; font-weight: bold; color: var(--petal-pink); }
+    </style>
+</head>
+<body class="dashboard-body" id="adminPage">
+    <div class="dashboard-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP" style="max-width: 150px;">
+                <button class="close-sidebar-btn" id="closeSidebar"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item active" id="navVisaoGeral" onclick="mudarAbaEducador('secVisaoGeral', 'navVisaoGeral')"><span class="material-symbols-outlined nav-icon">dashboard</span> <span class="nav-text">Visão Geral</span></li>
+                <li class="nav-item" id="navGestaoLotes" onclick="mudarAbaEducador('secGestaoLotes', 'navGestaoLotes')"><span class="material-symbols-outlined nav-icon">inventory_2</span> <span class="nav-text">Gestão de Lotes</span></li>
+                <li class="nav-item" id="navRankingAlunos" onclick="mudarAbaEducador('secRankingAlunos', 'navRankingAlunos')"><span class="material-symbols-outlined nav-icon">emoji_events</span> <span class="nav-text">Ranking Educandos</span></li>
+                <li class="nav-item" id="navLivroCaixa" onclick="mudarAbaEducador('secLivroCaixa', 'navLivroCaixa')"><span class="material-symbols-outlined nav-icon">account_balance_wallet</span> <span class="nav-text">Livro Caixa</span></li>
+            </ul>
+        </aside>
+        <div class="main-panel">
+            <header class="admin-header">
+                <div class="header-left"><button class="menu-toggle" id="openSidebar"><span class="material-symbols-outlined">menu</span></button><h1 class="admin-title">Painel Administrativo</h1></div>
+            </header>
+            <main class="admin-container">
+                <section id="secVisaoGeral">
+                    <div class="dashboard-grid">
+                        <div class="kpi-card"><div class="kpi-title">Arrecadação Global</div><div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal">R$ 0,00</div></div>
+                    </div>
+                </section>
+                <section id="secGestaoLotes" style="display: none;">
+                    <h2 class="section-title">Gestão de Lotes</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" id="buscaLoteAdm" class="purple-input" placeholder="Pesquisar aluno ou turma..." oninput="window.atualizarDashboardsADM()">
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><tr><th>Aluno</th><th>Turma</th><th class="text-center">Pendentes</th><th class="text-center">Ações</th></tr></thead>
+                            <tbody id="tabelaGestaoLotes"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="secRankingAlunos" style="display: none;">
+                    <h2 class="section-title">Ranking Geral</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome</th><th class="text-center">Lotes</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas</th><th class="text-center">Fone</th></tr></thead>
+                            <tbody id="tabelaRankingAlunosADM"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>
