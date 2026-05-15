@@ -1,0 +1,472 @@
+/* =========================================
+   DESIGN SYSTEM - BINGO CEDESP
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+  --petal-pink: #BC68A1; 
+  --coral-glow: #EA8652;
+  --burnt-peach: #E87E55;
+  --sunflower-gold: #F4B841;
+  --white: #FFFEFD;
+  --dim-grey: #626262;
+  --bg-color: #f7f7f9;
+  --light-gray: #e0e0e0;
+
+  --font-main: 'Sofia Sans', sans-serif; 
+  
+  --shadow-sm: 0 2px 8px rgba(98, 98, 98, 0.08);
+  --shadow-md: 0 4px 16px rgba(98, 98, 98, 0.12);
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-main); background-color: var(--bg-color); color: var(--dim-grey); }
+::selection { background-color: var(--petal-pink); color: var(--white); }
+body:not(.dashboard-body) { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+body.ranking-page { flex-direction: column; justify-content: flex-start; padding-bottom: 80px; }
+
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+
+/* =========================================
+   LOGIN E FORMULÁRIOS
+   ========================================= */
+.login-container { background-color: var(--white); padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); width: 90%; max-width: 400px; text-align: center; }
+.logo-cedesp { max-width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block; }
+.login-title { color: var(--coral-glow); margin-bottom: 0.5rem; font-weight: 700; }
+.login-subtitle { font-size: 0.9rem; margin-bottom: 2rem; color: var(--petal-pink); }
+.form-group { margin-bottom: 1.5rem; text-align: left; position: relative; }
+#loginForm .form-group:nth-child(1) { z-index: 10; }
+#loginForm .form-group:nth-child(2) { z-index: 5; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+.form-control { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--light-gray); border-radius: var(--radius-md); font-family: var(--font-main); font-size: 1rem; outline: none; transition: all 0.3s ease; }
+.form-control:focus { border-color: var(--petal-pink); box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2); }
+.btn-primary { width: 100%; background-color: var(--coral-glow); color: var(--white); border: none; padding: 1rem; border-radius: var(--radius-md); font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; margin-top: 0.5rem; }
+.btn-primary:hover { background-color: var(--burnt-peach); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+
+.custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+.custom-select { position: relative; display: flex; flex-direction: column; }
+/* Animação da setinha do Select */
+.arrow-icon { transition: transform 0.3s ease; color: var(--dim-grey); }
+.custom-select.open .arrow-icon { transform: rotate(180deg); color: var(--petal-pink); }
+.custom-select-trigger { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; border: 1.5px solid var(--light-gray); border-radius: var(--radius-md); cursor: pointer; }
+.custom-select.open .custom-select-trigger { border-color: var(--petal-pink); box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2); }
+.custom-options { position: absolute; top: 100%; left: 0; right: 0; background-color: var(--white); border: 1.5px solid var(--light-gray); border-radius: var(--radius-md); box-shadow: var(--shadow-md); margin-top: 0.5rem; opacity: 0; visibility: hidden; pointer-events: none; max-height: 200px; overflow-y: auto; z-index: 100; }
+.custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+.custom-option { display: block; width: 100%; padding: 0.8rem 1rem; cursor: pointer; color: var(--dim-grey); transition: background-color 0.2s ease, color 0.2s ease; }
+.custom-option:hover, .custom-option.selected { background-color: var(--petal-pink); color: var(--white); }
+
+/* =========================================
+   DASHBOARD ADM
+   ========================================= */
+.dashboard-wrapper { display: flex; min-height: 100vh; width: 100%; }
+.sidebar { width: 260px; background-color: var(--white); border-right: 1px solid var(--light-gray); display: flex; flex-direction: column; z-index: 100; }
+.sidebar-logo { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+.sidebar-logo img { max-width: 120px; }
+.close-sidebar-btn { display: none; background: none; border: none; color: var(--dim-grey); cursor: pointer; }
+.sidebar-nav { list-style: none; padding: 1.5rem 0; flex: 1; }
+.nav-item { padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+.nav-item:hover { color: var(--petal-pink); }
+.nav-item.active { background-color: #fdf5f9; color: var(--petal-pink); border-right: 3px solid var(--petal-pink); }
+.nav-icon { font-size: 1.4rem; }
+.sidebar-footer { padding: 1.5rem; border-top: 1px solid #f0f0f0; }
+.btn-logout { width: 100%; background: none; border: none; display: flex; align-items: center; gap: 0.5rem; color: var(--dim-grey); font-weight: 600; cursor: pointer; }
+.btn-logout:hover { color: var(--petal-pink); }
+
+.main-panel { flex: 1; display: flex; flex-direction: column; overflow-x: hidden; }
+.admin-header { background-color: var(--white); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); }
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.menu-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--dim-grey); }
+.admin-title { font-size: 1.4rem; color: var(--dim-grey); }
+.user-profile { display: flex; align-items: center; gap: 0.8rem; }
+.user-name { font-weight: 700; color: var(--dim-grey); font-size: 1.1rem; }
+.user-badge { background-color: var(--light-gray); color: var(--dim-grey); font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+
+.admin-container { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
+.section-title { font-size: 1.2rem; color: var(--dim-grey); margin-bottom: 1rem; padding-bottom: 0.5rem; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.kpi-card { background-color: var(--white); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid #f0f0f0; }
+.kpi-title { font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; }
+.kpi-value { font-size: 2rem; font-weight: 700; color: var(--dim-grey); margin-bottom: 0.2rem; }
+.kpi-value.highlight-purple { color: var(--petal-pink); }
+.kpi-value.highlight-yellow { color: var(--sunflower-gold); }
+.kpi-subtitle { font-size: 0.8rem; color: #a0a0a0; }
+.highlight-purple-text { color: var(--petal-pink); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
+
+.charts-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+.chart-container { background-color: var(--white); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid #f0f0f0;}
+.canvas-wrapper { position: relative; height: 300px; width: 100%; }
+.doughnut-wrapper { height: 250px; display: flex; justify-content: center; }
+
+.table-container { background-color: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow-x: auto; border: 1px solid #f0f0f0;}
+.data-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+.data-table th, .data-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.data-table th { background-color: #fafafa; font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 600; }
+.data-table td { font-size: 1rem; color: var(--dim-grey); vertical-align: middle; }
+
+.status-text { font-weight: 700; font-size: 0.95rem; }
+.status-text.pendente { color: var(--sunflower-gold); }
+.status-text.pago { color: var(--petal-pink); }
+
+.action-buttons { display: flex; gap: 0.8rem; align-items: center; }
+.icon-action-btn { background: none; border: none; color: #b0b0b0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; }
+.icon-action-btn:hover { background-color: #f5f5f5; color: var(--dim-grey); }
+.icon-action-btn.active-thumb { color: var(--petal-pink); }
+.icon-action-btn.active-thumb .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+
+/* =========================================
+   UI DOS MODAIS E CHECKBOX CUSTOMIZADO
+   ========================================= */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(98, 98, 98, 0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal-box { background-color: var(--white); width: 90%; max-width: 420px; border-radius: var(--radius-lg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); transform: translateY(30px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.modal-overlay.active .modal-box { transform: translateY(0); }
+.modal-header { padding: 1.5rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { font-size: 1.3rem; color: var(--dim-grey); font-weight: 700; }
+.close-modal-btn { background: none; border: none; color: #a0a0a0; cursor: pointer; transition: color 0.2s ease; display: flex; align-items: center; justify-content: center; }
+.close-modal-btn:hover { color: var(--petal-pink); }
+.modal-body { padding: 1.5rem; }
+.modal-desc { font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; line-height: 1.4; }
+
+select.select-nativo { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23bc68a1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 1rem auto; }
+
+.modal-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+.modal-actions button { margin-top: 0; }
+.btn-secondary { flex: 1; background-color: transparent; color: var(--dim-grey); border: 2px solid var(--light-gray); padding: 1rem; border-radius: var(--radius-md); font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.btn-secondary:hover { background-color: #f5f5f5; color: var(--petal-pink); border-color: #e0e0e0; }
+.modal-actions .btn-primary { flex: 1; }
+
+/* CHECKBOX CUSTOMIZADO PARA A TRANSFERÊNCIA */
+.checkbox-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  max-height: 140px; overflow-y: auto;
+  border: 1px solid var(--light-gray); border-radius: var(--radius-md);
+  padding: 0.8rem; background-color: #fafafa;
+}
+.checkbox-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  cursor: pointer; font-size: 0.95rem; color: var(--dim-grey);
+}
+.checkbox-item input[type="checkbox"] {
+  appearance: none; width: 20px; height: 20px;
+  border: 2px solid #ccc; border-radius: 4px;
+  cursor: pointer; position: relative; transition: all 0.2s;
+}
+.checkbox-item input[type="checkbox"]:checked {
+  background-color: var(--petal-pink); border-color: var(--petal-pink);
+}
+.checkbox-item input[type="checkbox"]:checked::after {
+  content: '✓'; color: white; position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 14px; font-weight: bold;
+}
+
+/* =========================================
+   UI ESPECÍFICA DO EDUCADOR (Fotos e Tabelas)
+   ========================================= */
+
+/* Área de captura de foto em formato de Elipse */
+.photo-capture-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.photo-ellipse {
+  width: 110px;
+  height: 140px;
+  border-radius: 50%; /* Faz o formato de elipse */
+  background-color: #f7f7f9;
+  border: 2px dashed var(--petal-pink);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--petal-pink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden; /* Para a foto não vazar da elipse quando for inserida */
+}
+
+.photo-ellipse:hover {
+  background-color: #fdf5f9;
+  transform: scale(1.05);
+}
+
+/* Avatar circular para a tabela de listagem */
+.table-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Faz o formato de círculo perfeito */
+  object-fit: cover;
+  border: 2px solid var(--light-gray);
+  display: block;
+}
+
+/* Centralização do texto nas colunas de quantidade */
+.td-center {
+  text-align: center;
+  font-weight: 600;
+}
+
+.td-highlight {
+  color: var(--sunflower-gold);
+}
+
+/* =========================================
+   UI ESPECÍFICA DO EDUCADOR E TABELAS
+   ========================================= */
+
+/* Área de captura de foto em formato de Elipse */
+.photo-capture-container { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+.photo-ellipse {
+  width: 110px; height: 140px; border-radius: 50%; background-color: #f7f7f9;
+  border: 2px dashed var(--petal-pink); display: flex; flex-direction: column;
+  justify-content: center; align-items: center; color: var(--petal-pink);
+  cursor: pointer; transition: all 0.2s ease; overflow: hidden; 
+}
+.photo-ellipse:hover { background-color: #fdf5f9; transform: scale(1.05); }
+
+/* Avatar circular para a tabela de listagem */
+.table-avatar {
+  width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--light-gray); display: block;
+}
+
+/* 
+  Regras de Centralização Perfeita (Cravar o alinhamento) 
+*/
+.text-center { text-align: center !important; }
+.td-center { text-align: center !important; font-weight: 600; vertical-align: middle; }
+.td-highlight { color: var(--sunflower-gold); }
+
+/* Alinhamento flexível para ícones com números dentro da tabela */
+.flex-center { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 4px; 
+}
+/* =========================================
+   UI ESPECÍFICA DO EDUCADOR E TABELAS
+   ========================================= */
+
+.photo-capture-container { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+.photo-ellipse {
+    width: 130px; /* Largura fixa */
+    height: 130px; /* Altura exatamente igual para proporção 1:1 */
+    border-radius: 50%; /* Transforma o quadrado em círculo perfeito */
+    border: 2px dashed var(--petal-pink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--petal-pink);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 auto; /* Centraliza horizontalmente */
+    flex-shrink: 0; /* Impede que a tela esprema o círculo virando oval */
+}
+
+.photo-ellipse:hover {
+    background-color: rgba(188, 104, 161, 0.1); /* Efeito suave no clique/toque */
+}
+
+.table-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--light-gray); display: block; }
+.text-center { text-align: center !important; }
+.td-center { text-align: center !important; font-weight: 600; vertical-align: middle; }
+.td-highlight { color: var(--sunflower-gold); }
+.flex-center { display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+/* Linhas clicáveis na Tabela */
+.tabela-interativa tbody tr {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    cursor: pointer;
+}
+.tabela-interativa tbody tr:hover {
+    background-color: #fdf5f9; /* Fundo rosinha claro ao passar o mouse */
+}
+.tabela-interativa tbody tr:active {
+    transform: scale(0.99);
+}
+
+/* Modal Detalhes do Aluno - Caixas de Lotes */
+.lotes-info-grid { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
+.lote-status-box { background-color: #f7f7f9; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--light-gray); }
+.status-title { display: block; font-weight: 700; margin-bottom: 0.8rem; font-size: 0.95rem; }
+.lotes-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.badge-lote { 
+    background-color: var(--white); 
+    border: 1px solid #d0d0d0; 
+    padding: 6px 10px; 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: var(--dim-grey); 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.badge-lote.vazio { background-color: transparent; border: none; font-weight: 400; color: #a0a0a0; box-shadow: none; padding: 0; }
+
+/* =========================================
+   RESPONSIVIDADE EXTRA (MOBILE FIRST)
+   ========================================= */
+
+/* Modais flexíveis para não quebrarem em telas pequenas */
+.modal-box {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-body {
+    overflow-y: auto; /* Adiciona scroll interno se a tela for muito baixa */
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid { 
+        grid-template-columns: 1fr; /* Força 1 card por linha no celular */
+    }
+    .charts-section {
+        grid-template-columns: 1fr; /* Gráficos ocupam linha inteira no celular */
+    }
+    .admin-container {
+        padding: 1rem;
+    }
+    .table-container {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    .kpi-value {
+        font-size: 1.6rem; /* Reduz um pouco o tamanho da fonte dos números no mobile */
+    }
+}
+/* =========================================
+   RESPONSIVIDADE EXTRA (MOBILE FIRST)
+   ========================================= */
+
+/* Modais flexíveis para não quebrarem em telas pequenas e com scroll interno */
+.modal-box {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-body {
+    overflow-y: auto; 
+    padding: 1.2rem;
+}
+
+/* Suavidade no toque ao rolar tabelas no celular */
+.table-container {
+    -webkit-overflow-scrolling: touch; 
+}
+
+@media (max-width: 768px) {
+    /* Força os cards a ocuparem 100% da tela empilhados */
+    .dashboard-grid { 
+        grid-template-columns: 1fr; 
+        gap: 1rem;
+    }
+    
+    /* Os gráficos também empilham */
+    .charts-section {
+        grid-template-columns: 1fr; 
+        gap: 1rem;
+    }
+    
+    /* Reduz paddings para ganhar espaço útil na tela do celular */
+    .admin-container {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+    .admin-header {
+        padding: 1rem;
+    }
+    
+    /* Remove as bordas laterais da tabela para ela "colar" nas laterais do celular */
+    .table-container {
+        border-radius: 0;
+        margin: 0 -1rem; 
+        width: calc(100% + 2rem);
+        border-left: none;
+        border-right: none;
+    }
+    
+    /* Ajusta fontes para não ficarem gigantes no mobile */
+    .kpi-value {
+        font-size: 1.6rem; 
+    }
+    .section-title {
+        font-size: 1.1rem;
+    }
+    
+    /* Aumenta a altura dos gráficos no mobile para não espremer */
+    .canvas-wrapper {
+        height: 250px;
+    }
+}
+/* =========================================
+   RESPONSIVIDADE EXTREMA (MOBILE FIRST)
+   ========================================= */
+
+/* Modais flexíveis e com scroll interno */
+.modal-box {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-body {
+    overflow-y: auto; 
+    padding: 1.2rem;
+}
+
+/* Suavidade no toque ao rolar tabelas no celular */
+.table-container {
+    -webkit-overflow-scrolling: touch; 
+}
+
+@media (max-width: 768px) {
+    /* Menu Lateral Oculto (Off-canvas) */
+    .sidebar { 
+        position: fixed; 
+        height: 100vh; 
+        transform: translateX(-100%); 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar.open { 
+        transform: translateX(0); 
+    }
+    
+    /* Botões do Menu Mobile */
+    .close-sidebar-btn { display: block; }
+    .menu-toggle { display: block; font-size: 1.5rem; color: var(--petal-pink); }
+    
+    /* Ajustes de Cabeçalho e Grid */
+    .admin-header { padding: 1rem; }
+    .admin-title { font-size: 1.2rem; }
+    .user-name { display: none; } /* Oculta o nome no mobile para ganhar espaço, mantém só a badge */
+    
+    .admin-container { padding: 1rem; gap: 1rem; }
+    .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .charts-section { grid-template-columns: 1fr; gap: 1rem; }
+    
+    /* Ajustes na Tabela e KPIs */
+    .table-container {
+        border-radius: 0;
+        margin: 0 -1rem; 
+        width: calc(100% + 2rem);
+        border-left: none;
+        border-right: none;
+    }
+    .kpi-value { font-size: 1.6rem; }
+    .section-title { font-size: 1.1rem; }
+    .canvas-wrapper { height: 250px; }
+    
+    /* Modais ocupando a tela quase toda no celular */
+    .modal-box { width: 95%; margin: 10px; }
+}

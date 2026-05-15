@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEDESP Bingo - Área do Educador</title>
+    <link rel="icon" href="assets/image/logo_cedesp.png" type="image/png">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+    <style>
+        .purple-input { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc; color: var(--dim-grey); font-size: 1rem; outline: none; transition: all 0.3s ease; }
+        .purple-input:focus { border-color: var(--petal-pink) !important; box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2) !important; }
+        .custom-select-wrapper { position: relative; width: 100%; user-select: none; }
+        .custom-select { position: relative; }
+        .custom-select-trigger { padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+        .custom-options { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--petal-pink); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); max-height: 220px; overflow-y: auto; z-index: 999999; display: none; margin-top: 5px; }
+        .custom-select.open .custom-options { display: block; }
+        .custom-option { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f5f5f5; color: var(--dim-grey); font-size: 0.95rem; }
+        .custom-option:hover { background: #fafafa; color: var(--petal-pink); font-weight: bold; }
+        .custom-select.open .custom-select-trigger, .custom-select-trigger:focus { border-color: var(--petal-pink); box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2); }
+
+        #modalCadastrarEducando .modal-box, #modalCadastrarEducando .modal-body,
+        #modalAtribuirLote .modal-box, #modalAtribuirLote .modal-body { overflow: visible !important; }
+        
+        #modalDetalhesAluno .modal-box { max-height: 85vh; display: flex; flex-direction: column; }
+        #modalDetalhesAluno .modal-body { overflow-y: auto; flex: 1; padding-bottom: 25px; padding-right: 5px; }
+        #modalDetalhesAluno .modal-body::-webkit-scrollbar { width: 6px; }
+        #modalDetalhesAluno .modal-body::-webkit-scrollbar-track { background: transparent; }
+        #modalDetalhesAluno .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+        .lote-status-box { padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 12px; background: #fafafa; text-align: left;}
+        .lotes-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .foto-upload-circle { width: 120px; height: 120px; border-radius: 50%; background-color: #f0f0f0; border: 2px dashed var(--petal-pink); margin: 0 auto 1.5rem auto; display: flex; justify-content: center; align-items: center; cursor: pointer; overflow: hidden; position: relative; }
+        .foto-upload-circle img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .foto-upload-circle .icon-camera { font-size: 40px; color: #ccc; position: absolute; }
+        input[type="checkbox"].roxo-checkbox { appearance: none; -webkit-appearance: none; min-width: 22px; min-height: 22px; border: 2px solid #ccc; border-radius: 4px; cursor: pointer; position: relative; outline: none; margin-right: 10px; }
+        input[type="checkbox"].roxo-checkbox:checked { background-color: var(--petal-pink); border-color: var(--petal-pink); }
+        input[type="checkbox"].roxo-checkbox:checked::after { content: '✔'; color: white; position: absolute; font-size: 16px; top: -2px; left: 3px; font-weight: bold; }
+        .checkbox-list-container { max-height: 180px; overflow-y: auto; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+        .checkbox-item-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .checkbox-item-row:hover { background: #fafafa; }
+        .chart-wrapper { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-top: 15px;}
+        .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
+        .img-container img { max-width: 100%; max-height: 400px; display: block; }
+    </style>
+</head>
+<body class="dashboard-body" id="educadorPage">
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo" style="display: flex; justify-content: space-between; align-items: center;">
+                <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP" style="max-width: 150px;">
+                <button class="close-sidebar-btn" id="closeSidebar"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item active" id="navMinhaTurma" onclick="mudarAbaEducador('secMinhaTurma', 'navMinhaTurma')"><span class="material-symbols-outlined nav-icon">groups</span> <span class="nav-text">Minha Turma</span></li>
+                <li class="nav-item" id="navVendasGeral" onclick="mudarAbaEducador('secVendasGeral', 'navVendasGeral')"><span class="material-symbols-outlined nav-icon">bar_chart</span> <span class="nav-text">Vendas Geral</span></li>
+                <li class="nav-item" onclick="abrirModal('modalCadastrarEducando')"><span class="material-symbols-outlined nav-icon">person_add</span> <span class="nav-text">Cadastrar Educando</span></li>
+                <li class="nav-item" onclick="abrirModal('modalAtribuirLote')"><span class="material-symbols-outlined nav-icon">assignment_ind</span> <span class="nav-text">Atribuir Lote</span></li>
+                <li class="nav-item" id="navRankingEducandos" onclick="mudarAbaEducador('secRankingEducandos', 'navRankingEducandos')"><span class="material-symbols-outlined nav-icon">emoji_events</span> <span class="nav-text">Ranking Educandos</span></li>
+                <li class="nav-item" id="navRankingEducadores" onclick="mudarAbaEducador('secRankingEducadores', 'navRankingEducadores')"><span class="material-symbols-outlined nav-icon">school</span> <span class="nav-text">Ranking Educadores</span></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="window.location.href='index.html'"><span class="material-symbols-outlined nav-icon">logout</span> <span class="nav-text">Sair</span></button>
+            </div>
+        </aside>
+
+        <div class="main-panel">
+            <header class="admin-header">
+                <div class="header-left"><button class="menu-toggle" id="openSidebar"><span class="material-symbols-outlined">menu</span></button><h1 class="admin-title">Área do Educador</h1></div>
+                <div class="user-profile"><span class="user-name" id="nomeEducador">Educador</span><span class="user-badge" style="background-color: var(--petal-pink); color: white;">EDUCADOR</span></div>
+            </header>
+
+            <main class="admin-container">
+                <section id="secMinhaTurma">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                        <h2 class="section-title" style="margin-bottom: 0; border: none;">Alunos Ativos</h2>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="buscaNomeAluno" class="purple-input" placeholder="Buscar aluno por nome..." style="flex: 1; min-width: 200px;">
+                        <div class="custom-select-wrapper" id="wrapperFiltroTurma" style="width: 250px;">
+                            <div class="custom-select">
+                                <div class="custom-select-trigger"><span class="trigger-text">Todas as Turmas</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div>
+                                <div class="custom-options"><span class="custom-option selected" data-value="Todas">Todas as Turmas</span><span class="custom-option" data-value="Turma 1">Turma 1</span><span class="custom-option" data-value="Turma 2">Turma 2</span><span class="custom-option" data-value="Turma 3">Turma 3</span><span class="custom-option" data-value="Turma 4">Turma 4</span></div>
+                            </div>
+                            <input type="hidden" id="filtroTurmaAluno" value="Todas">
+                        </div>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
+                        <table class="data-table tabela-interativa" style="min-width: 800px;">
+                            <thead><tr><th style="width: 50px;" class="text-center">Pos.</th><th style="width: 60px;">Foto</th><th>Nome do Educando</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
+                            <tbody id="tabelaAlunos"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="secVendasGeral" style="display: none;">
+                    <h2 class="section-title" style="border: none;">Resumo da Minha Turma</h2>
+                    <div class="dashboard-grid" style="margin-bottom: 2rem;">
+                        <div class="kpi-card" style="border-left: 4px solid var(--petal-pink);"><div class="kpi-title">Total Vendido (Sua Turma)</div><div class="kpi-value highlight-purple" id="kpiEducadorVendidos">0</div></div>
+                        <div class="kpi-card" style="border-left: 4px solid var(--sunflower-gold);"><div class="kpi-title">Aguardando Retorno</div><div class="kpi-value highlight-yellow" id="kpiEducadorPendentes">0</div></div>
+                        <div class="kpi-card" style="border-left: 4px solid #a0a0a0;"><div class="kpi-title">Lotes em Mãos (Disponível)</div><div class="kpi-value" style="color: var(--dim-grey);" id="kpiEducadorEstoque">0</div></div>
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 2rem 0;">
+                    <h2 class="section-title" style="border: none;">Visão Geral do Evento</h2>
+                    <div class="dashboard-grid">
+                        <div class="kpi-card"><div class="kpi-title">Arrecadação Global Consolidada</div><div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal">R$ 0,00</div></div>
+                        <div class="kpi-card"><div class="kpi-title">Pagamentos via PIX</div><div class="kpi-value highlight-purple" id="kpiCaixaPix">R$ 0,00</div></div>
+                        <div class="kpi-card"><div class="kpi-title">Pagamentos em Dinheiro</div><div class="kpi-value highlight-purple" id="kpiCaixaDinheiro">R$ 0,00</div></div>
+                        <div class="kpi-card"><div class="kpi-title">Projeção Global Restante</div><div class="kpi-value highlight-yellow" id="kpiProjecaoGlobal">R$ 0,00</div></div>
+                    </div>
+                    <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 1.5rem;">
+                        <div class="chart-wrapper"><h3 style="color: var(--dim-grey); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">Panorama de Lotes (Sede)</h3><div style="height: 250px;"><canvas id="estoqueChartEdu"></canvas></div></div>
+                        <div class="chart-wrapper"><h3 style="color: var(--dim-grey); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">Financeiro</h3><div style="height: 250px;"><canvas id="financeiroChartEdu"></canvas></div></div>
+                    </div>
+                </section>
+
+                <section id="secRankingEducandos" style="display: none;">
+                    <h2 class="section-title" style="border: none;">Ranking Global de Educandos</h2>
+                    <div class="table-container" style="overflow-x: auto; width: 100%; margin-bottom: 2rem;">
+                        <table class="data-table" style="min-width: 800px;">
+                            <thead><tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome do Educando</th><th>Turma</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th></tr></thead>
+                            <tbody id="tabelaRankingEducador"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="secRankingEducadores" style="display: none;">
+                    <h2 class="section-title" style="border: none;">Ranking Global de Educadores</h2>
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
+                        <table class="data-table" style="min-width: 600px;">
+                            <thead><tr><th style="width: 80px;" class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th></tr></thead>
+                            <tbody id="tabelaRankingEducadoresLista"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalCadastrarEducando"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Vincular Educando e Foto</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrarEducando')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrarEducando"><div class="foto-upload-circle" onclick="document.getElementById('inputFotoEducando').click()"><span class="material-symbols-outlined icon-camera" id="iconCamera">add_a_photo</span><img id="previewFoto" src="" alt="Preview"></div><input type="file" id="inputFotoEducando" accept="image/*" capture="environment" style="display: none;" onchange="iniciarCorteFoto(event)"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Nome do Educando</label><div class="custom-select-wrapper" id="wrapperNomeEducando"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione o aluno da lista...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesNomeEducando"></div></div><input type="hidden" id="nomeSelectEducando" required></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Turma e Período</label><div class="custom-select-wrapper" id="wrapperTurmaEducando"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione a Turma...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options"><span class="custom-option" data-value="Turma 1">Turma 1 (Manhã)</span><span class="custom-option" data-value="Turma 2">Turma 2 (Manhã)</span><span class="custom-option" data-value="Turma 3">Turma 3 (Tarde)</span><span class="custom-option" data-value="Turma 4">Turma 4 (Tarde)</span></div></div><input type="hidden" id="turmaSelectEducando" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Ativar Educando</button></form></div></div></div>
+    
+    <div class="modal-overlay" id="modalAtribuirLote"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Atribuir Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAtribuirLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formAtribuirLote"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis na Sede</label><div class="checkbox-list-container" id="listaLotesCheckboxes"></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Selecione o Educando</label><div class="custom-select-wrapper" id="wrapperAlunoAtribuir"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Escolha um aluno da sua turma...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesAlunoAtribuir"></div></div><input type="hidden" id="alunoAtribuirSelect" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Atribuição</button></form></div></div></div>
+
+    <div class="modal-overlay" id="modalDetalhesAluno">
+        <div class="modal-box" style="width: 90%; max-width: 450px;">
+            <div class="modal-header">
+                <h2>Ficha do Educando</h2>
+                <button class="close-modal-btn" onclick="fecharModal('modalDetalhesAluno')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body" style="padding-top: 1rem;">
+                
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 10px auto; cursor: pointer; display: inline-block;" onclick="document.getElementById('inputEditFoto').click()" title="Alterar Foto">
+                        <img src="" id="detalheFoto" class="table-avatar" style="width: 100%; height: 100%; border-color: var(--petal-pink); margin: 0; display: block; object-fit: cover;">
+                        <div style="position: absolute; bottom: -2px; right: -5px; background: var(--petal-pink); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                        </div>
+                    </div>
+                    <input type="file" id="inputEditFoto" accept="image/*" capture="environment" style="display: none;" onchange="iniciarCorteEdicao(event)">
+                    
+                    <h3 id="detalheNome" style="color: var(--dim-grey); margin-bottom: 5px; font-size: 1.4rem;">Nome do Aluno</h3>
+                    <p id="detalheTurma" style="color: var(--petal-pink); font-size: 0.95rem; font-weight: 600;">Curso - Turma</p>
+                </div>
+                
+                <div style="background: rgba(188, 104, 161, 0.05); padding: 15px; border: 1px dashed var(--petal-pink); border-radius: 8px; text-align: center; margin-bottom: 1rem;">
+                    <h4 style="color: var(--dim-grey); margin-bottom: 10px;">Conquistas de Venda</h4>
+                    <div style="display: flex; justify-content: center; gap: 30px;">
+                        <div><span class="material-symbols-outlined" style="color: var(--petal-pink); font-size: 28px;">headphones</span><br><strong style="font-size: 1.1rem;"><span id="detalheFone">0</span> Fone(s)</strong></div>
+                        <div><span class="material-symbols-outlined" style="color: var(--sunflower-gold); font-size: 28px;">description</span><br><strong style="font-size: 1.1rem;"><span id="detalheCartelasGanhas">0</span> Cartela(s)</strong></div>
+                    </div>
+                    <div id="boxRetirarCartela" style="margin-top: 15px; display: none;">
+                        <p style="color: var(--obsidian); font-size: 0.85rem; margin-bottom: 8px;"><strong><span id="detalheCartelasPendentes"></span> cartela(s) extra(s)</strong> prontas para entrega.</p>
+                        <button class="btn-primary" id="btnRetirarCartela" style="width: 100%; background-color: var(--sunflower-gold); color: white;">Confirmar Retirada</button>
+                    </div>
+                </div>
+
+                <div class="lotes-info-grid">
+                    <div class="lote-status-box">
+                        <span class="status-title" style="color: var(--petal-pink); font-weight:bold;">Lotes Vendidos (<span id="detalheQtdVendidos">0</span>)</span>
+                        <div class="lotes-badges" id="detalheBadgesVendidos"></div>
+                    </div>
+                    <div class="lote-status-box">
+                        <span class="status-title" style="color: var(--sunflower-gold); font-weight:bold;">Lotes Pendentes (<span id="detalheQtdPendentes">0</span>)</span>
+                        <div class="lotes-badges" id="detalheBadgesPendentes"></div>
+                        <p id="msgCliquePendente" style="font-size: 0.75rem; color: #a0a0a0; margin-top: 8px; display: none;">* Clique no lote para validar ou devolver.</p>
+                    </div>
+                    <div class="lote-status-box" style="margin-bottom: 0;">
+                        <span class="status-title" style="color: var(--dim-grey); font-weight:bold;">Lotes Devolvidos (<span id="detalheQtdDevolvidos">0</span>)</span>
+                        <div class="lotes-badges" id="detalheBadgesDevolvidos"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalCorteFoto" style="z-index: 10000;"><div class="modal-box" style="width: 95%; max-width: 500px;"><div class="modal-header"><h2>Ajustar Foto</h2><button class="close-modal-btn" onclick="fecharModal('modalCorteFoto')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding: 0;"><div class="img-container"><img id="imagemParaCorte" src="" alt="Imagem para cortar"></div><div style="padding: 1rem;"><button class="btn-primary" id="btnConfirmarCorte" style="width: 100%; background-color: var(--petal-pink);">Cortar e Salvar Foto</button></div></div></div></div>
+    <div class="modal-overlay" id="modalErro"><div class="modal-box" style="width: 90%; max-width: 400px; text-align: center;"><div class="modal-header"><h2>Ops! Algo deu errado</h2><button class="close-modal-btn" onclick="fecharModal('modalErro')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding-top: 1rem;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--sunflower-gold); margin-bottom: 10px;">error</span><p class="modal-desc" id="textoModalErro" style="font-size: 1.05rem; color: var(--dim-grey); margin-bottom: 1.5rem;"></p><button class="btn-primary" style="background-color: var(--petal-pink); width: 100%;" onclick="fecharModal('modalErro')">Tentar Novamente</button></div></div></div>
+    <div class="modal-overlay" id="modalSucesso"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Sucesso!</h2><button class="close-modal-btn" onclick="fecharModal('modalSucesso')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="text-align: center;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--petal-pink); margin-bottom: 1rem;">check_circle</span><p class="modal-desc" id="textoModalSucesso" style="font-size: 1.1rem; color: var(--dim-grey);"></p><button class="btn-primary" onclick="fecharModal('modalSucesso')" style="width: 100%;">Entendido</button></div></div></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

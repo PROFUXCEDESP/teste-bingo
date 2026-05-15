@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEDESP Bingo - Ranking Geral</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+</head>
+<body class="dashboard-body" id="rankingPage">
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP">
+                <button class="close-sidebar-btn" id="closeSidebar"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-item" onclick="window.location.href='educador.html'"><span class="material-symbols-outlined nav-icon">groups</span> <span class="nav-text">Minha Turma</span></li>
+                <li class="nav-item" onclick="window.location.href='vendas.html'"><span class="material-symbols-outlined nav-icon">bar_chart</span> <span class="nav-text">Vendas Geral</span></li>
+                <li class="nav-item" id="btnMenuCadastrar"><span class="material-symbols-outlined nav-icon">person_add</span> <span class="nav-text">Cadastrar Educando</span></li>
+                <li class="nav-item" id="btnMenuAtribuir"><span class="material-symbols-outlined nav-icon">assignment_ind</span> <span class="nav-text">Atribuir Lote</span></li>
+                <li class="nav-item active" onclick="window.location.href='ranking.html'"><span class="material-symbols-outlined nav-icon">social_leaderboard</span> <span class="nav-text">Ranking Educandos</span></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="window.location.href='index.html'"><span class="material-symbols-outlined nav-icon">logout</span> <span class="nav-text">Sair do Sistema</span></button>
+            </div>
+        </aside>
+
+        <div class="main-panel">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="openSidebar"><span class="material-symbols-outlined">menu</span></button>
+                    <h1 class="admin-title">Ranking Geral de Educandos</h1>
+                </div>
+                <div class="user-profile">
+                    <span class="user-name" id="nomeEducador">Carregando...</span> 
+                    <span class="user-badge" style="background-color: var(--sunflower-gold); color: white;">BINGO 2026</span>
+                </div>
+            </header>
+
+            <main class="admin-container">
+                <h2 class="section-title" style="border:none; margin-bottom: 1rem;">Top Vendedores CEDESP</h2>
+                
+                <section class="partners-section">
+                    <div class="table-container">
+                        <table class="data-table tabela-interativa" style="min-width: 800px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">Pos.</th>
+                                    <th style="width: 60px;">Foto</th>
+                                    <th>Nome do Educando</th>
+                                    <th class="text-center">Retirados</th>
+                                    <th class="text-center">Vendidos</th>
+                                    <th class="text-center">Pendentes</th>
+                                    <th class="text-center">Cartelas Ganhas</th>
+                                    <th class="text-center">Fone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaRankingGeral">
+                                <!-- Preenchido via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAIS OMITIDOS AQUI PARA BREVIDADE, MAS DEIXE OS MESMOS 4 MODAIS DO EDUCADOR.HTML AQUI NO FINAL -->
+    <div class="modal-overlay" id="modalDetalhesAluno"><div class="modal-box" style="max-width: 450px;"><div class="modal-header"><h2>Ficha do Educando</h2><button class="close-modal-btn" onclick="fecharModal('modalDetalhesAluno')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding-top: 1rem;"><div style="text-align: center; margin-bottom: 1.5rem;"><img src="" id="detalheFoto" class="table-avatar" style="width: 80px; height: 80px; margin: 0 auto 10px auto; border-color: var(--petal-pink);"><h3 id="detalheNome" style="color: var(--dim-grey); margin-bottom: 5px; font-size: 1.4rem;">Nome do Aluno</h3><p id="detalheTurma" style="color: var(--petal-pink); font-size: 0.95rem; font-weight: 600;">Curso - Turma</p></div><div class="lotes-info-grid"><div class="lote-status-box"><span class="status-title" style="color: var(--petal-pink);">Lotes Vendidos (<span id="detalheQtdVendidos">0</span>)</span><div class="lotes-badges" id="detalheBadgesVendidos"></div></div><div class="lote-status-box"><span class="status-title" style="color: var(--sunflower-gold);">Lotes Pendentes (<span id="detalheQtdPendentes">0</span>)</span><div class="lotes-badges" id="detalheBadgesPendentes"></div></div><div class="lote-status-box"><span class="status-title" style="color: var(--dim-grey);">Lotes Devolvidos (<span id="detalheQtdDevolvidos">0</span>)</span><div class="lotes-badges" id="detalheBadgesDevolvidos"></div></div></div></div></div></div>
+    <div class="modal-overlay" id="modalCadastrar"><div class="modal-box"><div class="modal-header"><h2>Cadastrar Educando</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrar')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrar"><div class="photo-capture-container"><div class="photo-ellipse" id="btnTirarFoto"><span class="material-symbols-outlined icon-filled" style="font-size: 32px;">add_a_photo</span><span style="font-size: 0.85rem; margin-top: 5px; font-weight: 600;">Tirar Foto</span></div></div><div class="form-group"><label>Nome do Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectNomeEducando"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Selecione o educando</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesNomeEducando"></div></div><input type="hidden" id="nomeEducandoVal" required></div></div><div class="form-group"><label>Turma do Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectTurmaAluno"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Selecione a turma</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options"><span class="custom-option" data-value="Turma 1">Turma 1</span><span class="custom-option" data-value="Turma 2">Turma 2</span><span class="custom-option" data-value="Turma 3">Turma 3</span><span class="custom-option" data-value="Turma 4">Turma 4</span></div></div><input type="hidden" id="turmaAluno" required></div></div><button type="submit" class="btn-primary">Salvar Educando</button></form></div></div></div>
+    <div class="modal-overlay" id="modalAtribuir"><div class="modal-box"><div class="modal-header"><h2>Atribuir Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAtribuir')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formAtribuir"><div class="form-group" id="containerLotesAtribuir"><label>Lotes Disponíveis (Marque para atribuir)</label><div class="checkbox-list" id="listaLotesAtribuir"></div></div><div class="form-group"><label>Selecione o Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectAlunoDestino"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Escolha o aluno...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesAlunoDestino"></div></div><input type="hidden" id="alunoDestinoVal" required></div></div><button type="submit" class="btn-primary" id="btnConfirmarAtribuicao" disabled>Atribuir Lotes</button></form></div></div></div>
+    <div class="modal-overlay" id="modalSucesso"><div class="modal-box"><div class="modal-header"><h2>Sucesso!</h2><button class="close-modal-btn" onclick="fecharModal('modalSucesso')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="text-align: center;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--petal-pink); margin-bottom: 1rem;">check_circle</span><p class="modal-desc" id="textoModalSucesso" style="font-size: 1.1rem; color: var(--dim-grey);"></p><button class="btn-primary" onclick="fecharModal('modalSucesso')">Entendido</button></div></div></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

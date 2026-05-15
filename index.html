@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEDESP Bingo - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        /* Trava o tamanho do logo para não explodir na tela */
+        .login-logo img {
+            max-width: 240px; 
+            height: auto;
+            margin: 0 auto 1.5rem auto;
+            display: block;
+        }
+
+        /* Sombra Roxa (Focus) na caixa de texto idêntica ao sistema interno */
+        input[type="password"]:focus, input[type="text"]:focus {
+            border-color: var(--petal-pink) !important;
+            box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2) !important;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Ajuste da cor do texto (pontinhos) ao digitar para Roxo */
+        input[type="password"] {
+            color: var(--petal-pink) !important;
+            font-weight: bold;
+            letter-spacing: 2px; /* Dá um respiro elegante entre os caracteres/pontos da senha */
+        }
+
+        /* Deixa o placeholder cinza bem clarinho para evitar confusão */
+        input[type="password"]::placeholder {
+            color: #d1d1d1 !important;
+            font-weight: normal;
+            letter-spacing: normal;
+        }
+    </style>
+</head>
+<body class="login-body">
+
+    <div class="login-container">
+        <div class="login-logo">
+            <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP">
+        </div>
+        
+        <h1 class="login-title">Festa Junina CEDESP</h1>
+        <p class="login-subtitle">Controle de Vendas de Bingo</p>
+
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label>Identificação</label>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select">
+                        <div class="custom-select-trigger" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc;">
+                            <span class="trigger-text" style="color: var(--dim-grey);">Selecione seu nome...</span>
+                            <span class="material-symbols-outlined arrow-icon">expand_more</span>
+                        </div>
+                        <div class="custom-options">
+                            <span class="custom-option" data-value="Rivelino">Rivelino</span>
+                            <span class="custom-option" data-value="Bruna">Bruna</span>
+                            <span class="custom-option" data-value="Jhersyka">Jhersyka</span>
+                            <span class="custom-option" data-value="Debora">Debora</span>
+                            <span class="custom-option" data-value="Adriano">Adriano</span>
+                            <span class="custom-option" data-value="Edmilson">Edmilson</span>
+                            <span class="custom-option" data-value="Edson">Edson</span>
+                            <span class="custom-option" data-value="Jessica">Jessica</span>
+                            <span class="custom-option" data-value="Marcos">Marcos</span>
+                        </div>
+                    </div>
+                    <!-- IMPORTANTE: Este ID é o que o Javascript procura -->
+                    <input type="hidden" id="educadorSelect" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Senha (6 dígitos)</label>
+                <input type="password" id="senhaInput" maxlength="6" placeholder="••••••" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc;">
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem; background-color: var(--petal-pink);">Acessar Sistema</button>
+        </form>
+    </div>
+
+    <!-- MODAL DE ERRO UI - Com a paleta do CEDESP -->
+    <div class="modal-overlay" id="modalErro">
+        <div class="modal-box" style="width: 90%; max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h2>Ops! Algo deu errado</h2>
+                <button class="close-modal-btn" onclick="fecharModal('modalErro')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body" style="padding-top: 1rem;">
+                <span class="material-symbols-outlined" style="font-size: 56px; color: var(--sunflower-gold); margin-bottom: 10px;">error</span>
+                <p class="modal-desc" id="textoModalErro" style="font-size: 1.05rem; color: var(--dim-grey); margin-bottom: 1.5rem;"></p>
+                <button class="btn-primary" style="background-color: var(--petal-pink); width: 100%;" onclick="fecharModal('modalErro')">Tentar Novamente</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
