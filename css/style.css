@@ -470,3 +470,57 @@ select.select-nativo { appearance: none; background-image: url("data:image/svg+x
     /* Modais ocupando a tela quase toda no celular */
     .modal-box { width: 95%; margin: 10px; }
 }
+
+/* --- Estilos de Paginação --- */
+.paginacao-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    gap: 12px;
+    background: #fdfdfd;
+    border-top: 1px solid #eee;
+    border-radius: 0 0 12px 12px;
+}
+
+.paginacao-btn {
+    background: #fff;
+    border: 1px solid var(--light-gray);
+    color: var(--dim-grey);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.paginacao-btn:hover:not(:disabled) {
+    border-color: var(--petal-pink);
+    color: var(--petal-pink);
+}
+
+.paginacao-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.paginacao-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--dim-grey);
+}
+
+.paginacao-input {
+    width: 45px;
+    padding: 4px;
+    text-align: center;
+    border: 1px solid var(--petal-pink);
+    border-radius: 4px;
+    font-weight: bold;
+    color: var(--petal-pink);
+}
+/* Remove setas do input number */
+.paginacao-input::-webkit-inner-spin-button, 
+.paginacao-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
