@@ -8,13 +8,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
     const IMGBB_API_KEY = '699c158483746240a585454fdfb09cac';
-    
     const userName = localStorage.getItem('usuarioLogado') || 'Administrador';
     
-    // CACHE DA TRAVA ANTI-DUPLICAÇÃO
+    window.fotoFileGlobal = null; let cropperInstancia = null;
+    let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
+    let estoqueChartInstAdm = null; let financeiroChartInstAdm = null;
+
+    window.caixaGlobal = { pixReais: 0.00, dinReais: 0.00 };
+    window.caixaGlobalBD = []; 
+    window.todosEducandosBD = []; window.mockEducadoresBD = [];
+    window.mockParceirosBD = []; window.lotesSedeBD = []; window.logsDoSistema = [];
+
+    // ==========================================
+    // ETAPA 2: TRAVA DE SEGURANÇA (Anti-Duplicação)
+    // ==========================================
     window.lotesValidadosNestaSessao = new Set();
 
-    // CONTROLE DE PÁGINAS E FILTROS
+    // ==========================================
+    // ETAPA 1: CONTROLE DE ESTADO E PAGINAÇÃO
+    // ==========================================
     window.pages = {
         rankAdm: { current: 1, term: "" },
         gestaoLotes: { current: 1, term: "" },
@@ -26,18 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         rankProfEdu: { current: 1 }
     };
 
-    window.fotoFileGlobal = null; let cropperInstancia = null;
-    let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
-    let estoqueChartInstAdm = null; let financeiroChartInstAdm = null;
-
-    window.caixaGlobal = { pixReais: 0.00, dinReais: 0.00 };
-    window.caixaGlobalBD = []; 
-    window.todosEducandosBD = []; window.mockEducadoresBD = [];
-    window.mockParceirosBD = []; window.lotesSedeBD = []; window.logsDoSistema = [];
-
-    // ==========================================
-    // UI PAGINAÇÃO DISCRETA
-    // ==========================================
     window.renderPaginationUI = function(containerId, key, totalItems, itemsPerPage, renderFunc) {
         const container = document.getElementById(containerId);
         if(!container) return;
@@ -68,9 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_log', dataHora, responsavel: userName, sessao, acao, detalhe, localizacao: 'Sistema Web' }) }).catch(e => console.error("Erro log", e));
     }
 
-    // ==========================================
-    // SISTEMA CUSTOM SELECTS
-    // ==========================================
     document.addEventListener('input', (e) => {
         if(e.target.classList.contains('search-custom-select')) {
             const term = e.target.value.toLowerCase();
@@ -127,9 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
         todasSecoes.forEach(sec => sec.style.display = 'none');
         const todosNavs = document.querySelectorAll('.sidebar-nav .nav-item');
         todosNavs.forEach(nav => nav.classList.remove('active'));
+        
         const secClicada = document.getElementById(secId); if(secClicada) secClicada.style.display = 'block';
         const navClicado = document.getElementById(navId); if(navClicado) navClicado.classList.add('active');
         if(window.innerWidth <= 768) { const side = document.getElementById('sidebar'); if(side) side.classList.remove('open'); }
+        
         if(document.getElementById("educadorPage") && window.atualizarDashboardEducador) window.atualizarDashboardEducador();
         if(document.getElementById("adminPage") && window.atualizarDashboardsADM) window.atualizarDashboardsADM();
     }
@@ -166,10 +165,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     cartelasEntregues: parseInt(e['Cartelas_Entregue']) || 0
                 }));
 
+                // MATEMÁTICA CORRIGIDA PARA OS GRÁFICOS NÃO TRAVAREM
                 window.mockEducadoresBD = data.educadores.map(e => {
                     let vendidos = 0; let pendentes = 0;
                     window.todosEducandosBD.forEach(al => {
-                        if(textoIgual(al.educadorResponsavel, e['Nome'])) { vendidos += al.lotesVendidos.length; pendentes += al.lotesPendentes.length; }
+                        if(textoIgual(al.educadorResponsavel, e['Nome'])) { 
+                            vendidos += al.lotesVendidos.length; 
+                            pendentes += al.lotesPendentes.length; 
+                        }
                     });
                     let retiradosSede = window.lotesSedeBD.filter(l => textoIgual(l.educador, e['Nome'])).length;
                     return { nome: e['Nome'], curso: e['Curso Responsavel'], lotesRetiradosSede: retiradosSede, lotesVendidos: vendidos, lotesPendentes: pendentes };
@@ -223,39 +226,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return { fone, cartelas };
     }
 
-    window.iniciarCorteFoto = function(event) {
-        const input = event.target;
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgToCrop = document.getElementById('imagemParaCorte'); imgToCrop.src = e.target.result;
-                window.modoEdicaoFoto = false; abrirModal('modalCorteFoto');
-                if(cropperInstancia) cropperInstancia.destroy();
-                cropperInstancia = new Cropper(imgToCrop, { aspectRatio: 1, viewMode: 1 });
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-        input.value = ''; 
-    }
-
-    const btnConfirmarCorte = document.getElementById('btnConfirmarCorte');
-    if(btnConfirmarCorte) {
-        btnConfirmarCorte.addEventListener('click', (e) => {
-            e.preventDefault();
-            if(cropperInstancia) {
-                cropperInstancia.getCroppedCanvas({ width: 300, height: 300 }).toBlob((blob) => {
-                    window.fotoFileGlobal = blob;
-                    document.getElementById('previewFoto').src = URL.createObjectURL(blob);
-                    document.getElementById('previewFoto').style.display = 'block';
-                    document.getElementById('iconCamera').style.display = 'none';
-                    fecharModal('modalCorteFoto');
-                }, 'image/jpeg');
-            }
-        });
-    }
-
     // ==========================================
-    // RENDERIZADORES PAGINADOS (NOWRAP APLICADO NAS STRINGS HTML)
+    // RENDERIZADORES PAGINADOS (Tabelas Fluidas)
     // ==========================================
 
     window.renderRankingAlunosAdm = function() {
@@ -273,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const cartelasHTML = rec.cartelas > 0 ? `<div class="flex-center" style="font-weight:bold; color:var(--sunflower-gold);">${rec.cartelas}</div>` : '-';
             const foneHTML = rec.fone > 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink);">headphones</span>' : '-';
             const tagMeu = `<br><small style="color:#a0a0a0">Edu: ${aluno.educadorResponsavel}</small>`;
-            return `<tr onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold;">${posReal}º</td><td><img src="${aluno.foto}" class="table-avatar"></td><td style="white-space: nowrap;"><strong style="color:var(--obsidian);">${aluno.nome}</strong>${tagMeu}</td><td style="color:var(--dim-grey); white-space: nowrap;">${aluno.turma}</td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
+            return `<tr onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold;">${posReal}º</td><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong style="color:var(--obsidian);">${aluno.nome}</strong>${tagMeu}</td><td style="color:var(--dim-grey);">${aluno.turma}</td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
         }).join('') || '<tr><td colspan="9" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum aluno encontrado.</td></tr>';
         
         renderPaginationUI('pagRankingAlunos', 'rankAdm', filtrados.length, 10, 'renderRankingAlunosAdm');
@@ -295,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const foneHTML = rec.fone > 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink);">headphones</span>' : '-';
             const destaque = textoIgual(aluno.educadorResponsavel, userName) ? 'background-color: rgba(188, 104, 161, 0.05);' : '';
             const tagMeu = textoIgual(aluno.educadorResponsavel, userName) ? ' <br><span style="font-size:0.7rem; background:var(--petal-pink); color:white; padding:2px 4px; border-radius:4px;">Seu Aluno</span>' : '';
-            return `<tr style="${destaque}" onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold;">${posReal}º</td><td><img src="${aluno.foto}" class="table-avatar"></td><td style="white-space: nowrap;"><strong style="color:var(--obsidian);">${aluno.nome}</strong>${tagMeu}</td><td style="color:var(--dim-grey); white-space: nowrap;">${aluno.turma}</td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
+            return `<tr style="${destaque}" onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold;">${posReal}º</td><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong style="color:var(--obsidian);">${aluno.nome}</strong>${tagMeu}</td><td style="color:var(--dim-grey);">${aluno.turma}</td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
         }).join('') || '<tr><td colspan="9" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum aluno encontrado.</td></tr>';
         
         renderPaginationUI('pagRankingEducador', 'rankEdu', filtrados.length, 10, 'renderRankingAlunosEdu');
@@ -311,10 +283,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tabela.innerHTML = paginated.map((aluno) => {
             const indexOrig = window.todosEducandosBD.indexOf(aluno);
-            return `<tr style="cursor: pointer;" onclick="abrirDetalhesAluno(${indexOrig})"><td><img src="${aluno.foto}" class="table-avatar"></td><td style="white-space: nowrap;"><strong>${aluno.nome}</strong></td><td style="color:var(--dim-grey); white-space: nowrap;">${aluno.curso}<br><small style="color:#a0a0a0">${aluno.turma}</small></td><td class="td-center highlight-yellow" style="font-weight:bold; font-size:1.1rem;">${aluno.lotesPendentes.length}</td></tr>`;
+            return `<tr style="cursor: pointer;" onclick="abrirDetalhesAluno(${indexOrig})"><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong>${aluno.nome}</strong></td><td style="color:var(--dim-grey);">${aluno.curso}<br><small style="color:#a0a0a0">${aluno.turma}</small></td><td class="td-center highlight-yellow" style="font-weight:bold; font-size:1.1rem;">${aluno.lotesPendentes.length}</td></tr>`;
         }).join('') || `<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhum lote pendente.</td></tr>`;
         
-        renderPaginationUI('pagGestaoLotes', 'gestaoLotes', filtrados.length, 10, 'renderGestaoLotesPaginado');
+        renderPaginationUI('pagLotes', 'gestaoLotes', filtrados.length, 10, 'renderGestaoLotesPaginado');
     }
 
     window.renderLogsPaginado = function() {
@@ -348,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const val = parseFloat(tx['Valor'] || 0).toFixed(2).replace('.', ',');
             const met = tx['Metodo_Pagamento'] || tx['Método'] || tx['Metodo'] || '-';
             const resp = tx['Responsavel'] || tx['Educador Responsavel'] || '-';
-            return `<tr><td>${dt}</td><td><span style="color:#a0a0a0; font-size:0.8rem;">${id}</span></td><td><strong>${lote}</strong></td><td style="white-space: nowrap;">${edu}</td><td class="highlight-purple" style="font-weight:bold;">R$ ${val}</td><td>${met}</td><td>${resp}</td></tr>`;
+            return `<tr><td>${dt}</td><td><span style="color:#a0a0a0; font-size:0.8rem;">${id}</span></td><td><strong>${lote}</strong></td><td>${edu}</td><td class="highlight-purple" style="font-weight:bold;">R$ ${val}</td><td>${met}</td><td>${resp}</td></tr>`;
         }).join('') || `<tr><td colspan="7" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhuma transação.</td></tr>`;
         renderPaginationUI('pagLivroCaixa', 'caixa', filtrados.length, 10, 'renderLivroCaixaPaginado');
     }
@@ -368,13 +340,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const rec = calcularRecompensas(aluno.lotesVendidos.length);
             const cartelasHTML = rec.cartelas > 0 ? `<div class="flex-center" style="font-weight:bold; color:var(--sunflower-gold);">${rec.cartelas}</div>` : '-';
             const foneHTML = rec.fone > 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink);">headphones</span>' : '-';
-            return `<tr onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold; color: #BC68A1;">${posReal}</td><td><img src="${aluno.foto}" class="table-avatar"></td><td style="white-space: nowrap;"><strong>${aluno.nome}</strong><br><small style="color:#a0a0a0">${aluno.curso}</small></td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
+            return `<tr onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)})"><td class="td-center" style="font-weight: bold; color: #BC68A1;">${posReal}</td><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong>${aluno.nome}</strong><br><small style="color:#a0a0a0">${aluno.curso}</small></td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
         }).join('') || '<tr><td colspan="8" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum aluno encontrado.</td></tr>';
         
         renderPaginationUI('pagMinhaTurma', 'minhaTurma', filtrados.length, 10, 'renderMinhaTurmaPaginado');
     }
 
-    // GATILHOS DE BUSCA E FILTROS
+    // Buscas
     const srchRankA = document.getElementById("buscaRankingAluno");
     if(srchRankA) srchRankA.addEventListener('input', (e) => { window.pages.rankAdm.term = e.target.value; window.pages.rankAdm.current = 1; window.renderRankingAlunosAdm(); });
     
@@ -431,14 +403,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const tabelaRankingEducadores = document.getElementById('tabelaRankingEducadoresLista');
             if(tabelaRankingEducadores) {
                 let rankingProf = [...window.mockEducadoresBD].sort((a, b) => b.lotesVendidos - a.lotesVendidos);
-                
                 const startIdx = (window.pages.rankProfEdu.current - 1) * 10;
                 const paginated = rankingProf.slice(startIdx, startIdx + 10);
 
                 tabelaRankingEducadores.innerHTML = paginated.map((prof, index) => {
                     const destaque = textoIgual(prof.nome, userName) ? 'background-color: rgba(188, 104, 161, 0.05);' : '';
                     const valorArrecadado = (prof.lotesVendidos * 20).toFixed(2).replace('.', ',');
-                    return `<tr style="${destaque}"><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td style="white-space: nowrap;"><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey); white-space: nowrap;">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td><td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td></tr>`;
+                    return `<tr style="${destaque}"><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey);">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td><td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td></tr>`;
                 }).join('');
                 renderPaginationUI('pagRankingEducadoresLista', 'rankProfEdu', rankingProf.length, 10, 'atualizarDashboardEducador');
             }
@@ -481,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 meusLotes.forEach(l => { 
                     if(lotesEmUso.includes(l.codigo)) {
-                        htmlLotes += `<label class="checkbox-item-row" style="opacity: 0.5; cursor: not-allowed;" title="Lote já em uso"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}" disabled> <span style="color: var(--dim-grey); font-weight: 500; text-decoration: line-through;">${l.codigo}</span> <span style="margin-left:auto; font-size: 0.8rem; color:#a0a0a0;">Em uso</span></label>`; 
+                        htmlLotes += `<label class="checkbox-item-row" style="opacity: 0.5; cursor: not-allowed;"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}" disabled> <span style="color: var(--dim-grey); font-weight: 500; text-decoration: line-through;">${l.codigo}</span> <span style="margin-left:auto; font-size: 0.8rem; color:#a0a0a0;">Em uso</span></label>`; 
                     } else {
                         htmlLotes += `<label class="checkbox-item-row"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}"> <span style="color: var(--dim-grey); font-weight: 500;">${l.codigo}</span></label>`; 
                     }
@@ -571,6 +542,24 @@ document.addEventListener("DOMContentLoaded", () => {
             if(document.getElementById('kpiInativos')) document.getElementById('kpiInativos').innerText = inativos;
             if(document.getElementById('kpiAdesao')) document.getElementById('kpiAdesao').innerText = totalAlunos > 0 ? `${Math.round((ativos/totalAlunos)*100)}%` : '0%';
 
+            let maiorEstoqueNome = "Nenhum"; let maiorEstoqueQtd = -1;
+            window.mockEducadoresBD.forEach(ed => {
+                let est = ed.lotesRetiradosSede - ed.lotesVendidos - ed.lotesPendentes;
+                if (est > maiorEstoqueQtd) { maiorEstoqueQtd = est; maiorEstoqueNome = ed.nome; }
+            });
+            if(document.getElementById('kpiMaiorEstoque')) document.getElementById('kpiMaiorEstoque').innerHTML = `<strong>${maiorEstoqueNome}</strong> <br><span style="font-size: 1rem; color: var(--dim-grey); font-weight: normal;">${maiorEstoqueQtd} lotes disponíveis</span>`;
+
+            const ctxEst = document.getElementById('estoqueChart');
+            if (ctxEst && ctxEst.offsetParent !== null) { 
+                if (!estoqueChartInstAdm) estoqueChartInstAdm = new Chart(ctxEst.getContext('2d'), { type: 'doughnut', data: { labels: ['Válidos', 'Pendentes', 'Estoque'], datasets: [{ data: [totalVendidos, totalPendentes, 440], backgroundColor: ['#BC68A1', '#F4B841', '#e0e0e0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false } });
+                else { estoqueChartInstAdm.data.datasets[0].data = [totalVendidos, totalPendentes, 440]; estoqueChartInstAdm.update(); }
+            }
+            const ctxFin = document.getElementById('financeiroChart');
+            if (ctxFin && ctxFin.offsetParent !== null) {
+                if (!financeiroChartInstAdm) financeiroChartInstAdm = new Chart(ctxFin.getContext('2d'), { type: 'bar', data: { labels: ['Caixa Realizado', 'Projeção Restante'], datasets: [{ label: 'Valor em R$', data: [vVendas, vPendentes], backgroundColor: ['#BC68A1', '#F4B841'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+                else { financeiroChartInstAdm.data.datasets[0].data = [vVendas, vPendentes]; financeiroChartInstAdm.update(); }
+            }
+
             window.renderRankingAlunosAdm();
             window.renderGestaoLotesPaginado();
             window.renderLogsPaginado();
@@ -584,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 tabelaRankingEducadoresADM.innerHTML = paginated.map((prof, index) => {
                     const valorArrecadado = (prof.lotesVendidos * 20).toFixed(2).replace('.', ',');
-                    return `<tr><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td style="white-space: nowrap;"><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey); white-space: nowrap;">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td><td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td></tr>`;
+                    return `<tr><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey);">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td><td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td></tr>`;
                 }).join('');
                 renderPaginationUI('pagRankingEducadores', 'rankProfAdm', rankingProf.length, 10, 'atualizarDashboardsADM');
             }
