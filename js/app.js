@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const userName = localStorage.getItem('usuarioLogado') || 'Administrador';
     
+    // ETAPA 2: TRAVA DE SEGURANÇA (Cache de Lotes Validados)
+    window.lotesValidadosNestaSessao = new Set();
+    
     window.fotoFileGlobal = null; let cropperInstancia = null;
     let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
     let estoqueChartInstAdm = null; let financeiroChartInstAdm = null;
@@ -20,14 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.todosEducandosBD = []; window.mockEducadoresBD = [];
     window.mockParceirosBD = []; window.lotesSedeBD = []; window.logsDoSistema = [];
 
-    // ==========================================
-    // ETAPA 2: TRAVA DE SEGURANÇA (Cache)
-    // ==========================================
-    window.lotesValidadosNestaSessao = new Set();
-
-    // ==========================================
     // ETAPA 1: CONTROLE DE ESTADO DAS PÁGINAS
-    // ==========================================
     window.pages = {
         rankAdm: { current: 1, term: "" },
         gestaoLotes: { current: 1, term: "" },
@@ -70,6 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_log', dataHora, responsavel: userName, sessao, acao, detalhe, localizacao: 'Sistema Web' }) }).catch(e => console.error("Erro log", e));
     }
 
+    // ==========================================
+    // SISTEMA CUSTOM SELECTS E NAVEGAÇÃO
+    // ==========================================
     document.addEventListener('input', (e) => {
         if(e.target.classList.contains('search-custom-select')) {
             const term = e.target.value.toLowerCase();
@@ -185,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if(transacao['Metodo_Pagamento'] === 'Dinheiro') window.caixaGlobal.dinReais += valor;
                     });
                 }
+                
                 window.logsDoSistema = data.logs || [];
 
                 if(btnSync) btnSync.innerText = userName;
@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tabela.innerHTML = paginated.map((aluno) => {
             const indexOrig = window.todosEducandosBD.indexOf(aluno);
             return `<tr style="cursor: pointer;" onclick="abrirDetalhesAluno(${indexOrig})"><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong>${aluno.nome}</strong></td><td style="color:var(--dim-grey);">${aluno.curso}<br><small style="color:#a0a0a0">${aluno.turma}</small></td><td class="td-center highlight-yellow" style="font-weight:bold; font-size:1.1rem;">${aluno.lotesPendentes.length}</td></tr>`;
-        }).join('') || `<tr><td colspan=\"4\" class=\"text-center\" style=\"padding: 2rem; color: #a0a0a0;\">Nenhum lote pendente.</td></tr>`;
+        }).join('') || `<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhum lote pendente.</td></tr>`;
         
         renderPaginationUI('pagGestaoLotes', 'gestaoLotes', filtrados.length, 10, 'renderGestaoLotesPaginado');
     }
@@ -327,10 +327,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const dt = l['Data/Hora'] || l['Data_Hora'] || l['Data Hora'] || l['Data'] || '-';
             const resp = l['Responsavel'] || l['Responsável'] || l['Usuário'] || l['Usuario'] || '-';
             const sessao = l['Sessão_Dispositivo'] || l['Sessao'] || l['Sessao Dispositivo'] || '-';
-            const acao = l['Ação_Registrada'] || l['Acao'] || l['Ação'] || l['Acao Registrada'] || '-';
+            const acao = l['Ação_Registrada'] || l['Ação'] || l['Ação'] || l['Acao Registrada'] || '-';
             const det = l['Detalhes'] || l['Detalhe'] || '-';
             return `<tr><td style="color:var(--dim-grey); font-size:0.85rem;">${dt}</td><td><strong>${resp}</strong><br><small style="color:#ccc;">${sessao}</small></td><td style="color:var(--petal-pink); font-weight:bold;">${acao}</td><td style="color:var(--dim-grey);">${det}</td></tr>`;
-        }).join('') || `<tr><td colspan=\"4\" class=\"text-center\" style=\"padding: 2rem; color: #a0a0a0;\">Nenhum log encontrado.</td></tr>`;
+        }).join('') || `<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhum log encontrado.</td></tr>`;
         renderPaginationUI('pagLogs', 'logs', filtrados.length, 10, 'renderLogsPaginado');
     }
 
@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const met = tx['Metodo_Pagamento'] || tx['Método'] || tx['Metodo'] || '-';
             const resp = tx['Responsavel'] || tx['Educador Responsavel'] || '-';
             return `<tr><td>${dt}</td><td><span style="color:#a0a0a0; font-size:0.8rem;">${id}</span></td><td><strong>${lote}</strong></td><td>${edu}</td><td class="highlight-purple" style="font-weight:bold;">R$ ${val}</td><td>${met}</td><td>${resp}</td></tr>`;
-        }).join('') || `<tr><td colspan=\"7\" class=\"text-center\" style=\"padding: 2rem; color: #a0a0a0;\">Nenhuma transação.</td></tr>`;
+        }).join('') || `<tr><td colspan="7" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhuma transação.</td></tr>`;
         renderPaginationUI('pagLivroCaixa', 'caixa', filtrados.length, 10, 'renderLivroCaixaPaginado');
     }
 
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderPaginationUI('pagMinhaTurma', 'minhaTurma', filtrados.length, 10, 'renderMinhaTurmaPaginado');
     }
 
-    // GATILHOS DE BUSCA E FILTRO
+    // GATILHOS DE BUSCA 
     const srchRankA = document.getElementById("buscaRankingAluno");
     if(srchRankA) srchRankA.addEventListener('input', (e) => { window.pages.rankAdm.term = e.target.value; window.pages.rankAdm.current = 1; window.renderRankingAlunosAdm(); });
     
@@ -429,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tabelaRankingEducadores = document.getElementById('tabelaRankingEducadoresLista');
             if(tabelaRankingEducadores) {
                 let rankingProf = [...window.mockEducadoresBD].sort((a, b) => b.lotesVendidos - a.lotesVendidos);
+                
                 const startIdx = (window.pages.rankProfEdu.current - 1) * 10;
                 const paginated = rankingProf.slice(startIdx, startIdx + 10);
 
@@ -449,7 +450,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 let optsCad = searchBox;
                 if (todosMeusAlunosDB.length === 0) { optsCad += '<span class="custom-option" data-value="">Nenhum aluno no banco.</span>'; } 
                 else {
-                    todosMeusAlunosDB.forEach(a => { optsCad += `<span class="custom-option" data-value="${a.nome}">${a.nome}</span>`; });
+                    todosMeusAlunosDB.forEach(a => { 
+                        let lblFoto = a.foto.includes('ui-avatars') ? '<span style="color:#a0a0a0; font-size: 0.8rem;">(Sem Foto)</span>' : '<span style="color:var(--petal-pink); font-size: 0.8rem;">(Editar Foto)</span>';
+                        optsCad += `<span class="custom-option" data-value="${a.nome}">${a.nome} - ${lblFoto}</span>`; 
+                    });
                 }
                 selectNomeCadastro.innerHTML = optsCad;
                 ativarEventosSelectCustomizado(wrapCad);
@@ -563,6 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if(document.getElementById('kpiCaixaPix')) document.getElementById('kpiCaixaPix').innerText = `R$ ${vVendasPix.toFixed(2).replace('.', ',')}`;
             if(document.getElementById('kpiCaixaDinheiro')) document.getElementById('kpiCaixaDinheiro').innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
             if(document.getElementById('kpiProjecaoGlobal')) document.getElementById('kpiProjecaoGlobal').innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
+            
             if(document.getElementById('kpiAtivos')) document.getElementById('kpiAtivos').innerText = ativos;
             if(document.getElementById('kpiInativos')) document.getElementById('kpiInativos').innerText = inativos;
             if(document.getElementById('kpiAdesao')) document.getElementById('kpiAdesao').innerText = totalAlunos > 0 ? `${Math.round((ativos/totalAlunos)*100)}%` : '0%';
@@ -687,9 +692,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.abrirAcaoLote = function(lote, idxAluno) {
-        // TRAVA ANTI-DUPLICAÇÃO (Abertura do Modal)
+        // TRAVA ANTI-DUPLICAÇÃO DE ABERTURA
         if(window.lotesValidadosNestaSessao.has(lote)) {
-            return window.abrirModalErro("Este Lote já foi faturado ou processado!");
+            return window.abrirModalErro("Esse Lote já está faturado ou processado!");
         }
 
         const aluno = window.todosEducandosBD[idxAluno];
@@ -720,12 +725,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (vPix + vDin !== 20.00) return window.abrirModalErro(`A soma deve dar R$ 20,00.`);
         }
 
-        // TRAVA ANTI-DUPLICAÇÃO (Confirmação)
+        // TRAVA DE SEGURANÇA IMEDIATA
         if(window.lotesValidadosNestaSessao.has(lote)) {
             fecharModal('modalAcaoLote');
             return window.abrirModalErro("Você já faturou este lote. Aguarde a sincronização.");
         }
-        window.lotesValidadosNestaSessao.add(lote); // REGISTRA O LOTE NO CACHE DA MEMÓRIA
+        window.lotesValidadosNestaSessao.add(lote); // REGISTRA NO CACHE O LOTE
         
         window.caixaGlobal.pixReais += vPix; window.caixaGlobal.dinReais += vDin;
         aluno.lotesPendentes = aluno.lotesPendentes.filter(l => l !== lote);
@@ -746,7 +751,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const idx = document.getElementById('acaoAlunoIdxInput').value;
         const aluno = window.todosEducandosBD[idx];
         
-        // TRAVA ANTI-DUPLICAÇÃO (Confirmação)
         if(window.lotesValidadosNestaSessao.has(lote)) {
             fecharModal('modalAcaoLote');
             return window.abrirModalErro("Você já processou este lote. Aguarde a sincronização.");
@@ -765,5 +769,12 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(SCRIPT_URL, {
             method: 'POST', body: JSON.stringify({ action: 'transacao_lote', acaoLote: 'devolucao', lote: lote, nomeAluno: aluno.nome, responsavel: userName })
         }).catch(err => console.error("Erro", err));
+    }
+
+    // ==========================================
+    // INICIALIZAÇÃO DO SISTEMA
+    // ==========================================
+    if (document.getElementById("adminPage") || document.getElementById("educadorPage")) {
+        window.carregarDadosDoBanco();
     }
 });
