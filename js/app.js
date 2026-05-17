@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 meusLotes.forEach(l => { 
                     if(lotesEmUso.includes(l.codigo)) {
-                        htmlLotes += `<label class="checkbox-item-row" style="opacity: 0.5; cursor: not-allowed;"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}" disabled> <span style="color: var(--dim-grey); font-weight: 500; text-decoration: line-through;">${l.codigo}</span> <span style="margin-left:auto; font-size: 0.8rem; color:#a0a0a0;">Em uso</span></label>`; 
+                        htmlLotes += `<label class="checkbox-item-row" style="opacity: 0.5; cursor: not-allowed;" title="Lote já em uso"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}" disabled> <span style="color: var(--dim-grey); font-weight: 500; text-decoration: line-through;">${l.codigo}</span> <span style="margin-left:auto; font-size: 0.8rem; color:#a0a0a0;">Em uso</span></label>`; 
                     } else {
                         htmlLotes += `<label class="checkbox-item-row"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}"> <span style="color: var(--dim-grey); font-weight: 500;">${l.codigo}</span></label>`; 
                     }
@@ -666,6 +666,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const elFone = document.getElementById('detalheFone'); if(elFone) elFone.innerText = recompensas.fone;
         const elCartelas = document.getElementById('detalheCartelasGanhas'); if(elCartelas) elCartelas.innerText = recompensas.cartelas;
         
+        let pendentesEntrega = recompensas.cartelas - aluno.cartelasEntregues;
+        const boxRetirar = document.getElementById('boxRetirarCartela');
+        if (boxRetirar) {
+            if (pendentesEntrega > 0 && !isAdmin) { 
+                boxRetirar.style.display = 'block';
+                document.getElementById('detalheCartelasPendentes').innerText = pendentesEntrega;
+                document.getElementById('btnRetirarCartela').onclick = () => window.registrarRetiradaCartela(idx);
+            } else { boxRetirar.style.display = 'none'; }
+        }
+
         const elVendidos = document.getElementById('detalheQtdVendidos'); if(elVendidos) elVendidos.innerText = aluno.lotesVendidos.length;
         const elPendentes = document.getElementById('detalheQtdPendentes'); if(elPendentes) elPendentes.innerText = aluno.lotesPendentes.length;
         const elDevolvidos = document.getElementById('detalheQtdDevolvidos'); if(elDevolvidos) elDevolvidos.innerText = aluno.lotesDevolvidos ? aluno.lotesDevolvidos.length : 0;
@@ -680,6 +690,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cliquePend = document.getElementById('msgCliquePendente'); if(cliquePend) cliquePend.style.display = 'none';
                 badgePendentes = aluno.lotesPendentes.map(l => `<span class="badge-lote">${l}</span>`).join('');
             }
+        } else {
+            const cliquePend = document.getElementById('msgCliquePendente'); if(cliquePend) cliquePend.style.display = 'none';
         }
         
         const badgeDevolvidos = aluno.lotesDevolvidos && aluno.lotesDevolvidos.length ? aluno.lotesDevolvidos.map(l => `<span class="badge-lote">${l}</span>`).join('') : '<span class="badge-lote vazio">Nenhum</span>';
@@ -689,6 +701,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const bD = document.getElementById('detalheBadgesDevolvidos'); if(bD) bD.innerHTML = badgeDevolvidos;
         
         abrirModal('modalDetalhesAluno');
+    }
+
+    window.registrarRetiradaCartela = function(idx) {
+        const aluno = window.todosEducandosBD[idx];
+        aluno.cartelasEntregues += 1; 
+        window.registrarLog("Retirada Cartela Extra", `O Aluno ${aluno.nome} retirou +1 cartela física.`);
+        abrirDetalhesAluno(idx); 
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'entregar_cartela', nomeAluno: aluno.nome }) }).catch(err => console.error(err));
     }
 
     window.abrirAcaoLote = function(lote, idxAluno) {
