@@ -524,3 +524,12 @@ select.select-nativo { appearance: none; background-image: url("data:image/svg+x
 /* Remove setas do input number */
 .paginacao-input::-webkit-inner-spin-button, 
 .paginacao-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+
+/* PAGINAÇÃO DISCRETA */
+.discrete-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+.btn-page-discrete { background: #fcf9fc; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 1.2rem; color: var(--petal-pink); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: bold; }
+.btn-page-discrete:hover:not(:disabled) { border-color: var(--petal-pink); background: white; transform: scale(1.05); }
+.btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; transform: none; }
+.page-input-discrete { width: 45px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
+.page-input-discrete:focus { border-color: var(--petal-pink); }
