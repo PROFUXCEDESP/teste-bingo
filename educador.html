@@ -44,10 +44,10 @@
         
         /* Paginação Discreta */
         .discrete-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
-        .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
-        .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
-        .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
-        .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
+        .btn-page-discrete { background: #fcf9fc; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 1.2rem; color: var(--petal-pink); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: bold; }
+        .btn-page-discrete:hover:not(:disabled) { border-color: var(--petal-pink); background: white; }
+        .btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; }
+        .page-input-discrete { width: 50px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
     </style>
 </head>
@@ -92,8 +92,8 @@
                             <input type="hidden" id="filtroTurmaAluno" value="Todas">
                         </div>
                     </div>
-                    <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table tabela-interativa" style="min-width: 900px;">
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table class="data-table tabela-interativa" style="width: 100%;">
                             <thead><tr><th style="width: 50px;" class="text-center">Pos.</th><th style="width: 60px;">Foto</th><th>Nome do Educando</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaAlunos"></tbody>
                         </table>
@@ -125,8 +125,8 @@
                 <section id="secRankingEducandos" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educandos</h2>
                     <input type="text" id="buscaRankingAlunoEdu" class="purple-input" placeholder="Pesquisar educando no ranking..." style="margin-bottom: 1rem;">
-                    <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table" style="min-width: 900px;">
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table class="data-table" style="width: 100%;">
                             <thead><tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome do Educando</th><th>Turma</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaRankingEducador"></tbody>
                         </table>
@@ -136,8 +136,8 @@
 
                 <section id="secRankingEducadores" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educadores</h2>
-                    <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table" style="min-width: 700px;">
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table class="data-table" style="width: 100%;">
                             <thead><tr><th style="width: 80px;" class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr></thead>
                             <tbody id="tabelaRankingEducadoresLista"></tbody>
                         </table>
@@ -190,7 +190,36 @@
         </div>
     </div>
     
-    <div class="modal-overlay" id="modalAcaoLote"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Validação de Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAcaoLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><div style="text-align: center; margin-bottom: 1rem;"><h3 style="color: var(--petal-pink); font-size: 1.5rem; margin-bottom: 5px;" id="acaoLoteNome">LOTE-XX</h3><p style="color: var(--dim-grey); font-weight: bold;">Aluno: <span id="acaoLoteAluno">Nome</span></p></div><input type="hidden" id="acaoLoteInput"><input type="hidden" id="acaoAlunoIdxInput"><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey);">Forma de Pagamento (R$ 20,00)</label><div style="display: flex; gap: 15px; margin-top: 10px; margin-bottom: 15px;"><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="PIX" class="amarelo-radio" checked onchange="toggleMisto(false)"> PIX</label><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Dinheiro" class="amarelo-radio" onchange="toggleMisto(false)"> Dinheiro</label><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Misto" class="amarelo-radio" onchange="toggleMisto(true)"> Misto</label></div><div id="camposMisto" style="display: none; gap: 10px;"><div class="form-group" style="flex: 1;"><label>Valor PIX (R$)</label><input type="number" id="valorPixMisto" step="0.01" class="purple-input"></div><div class="form-group" style="flex: 1;"><label>Valor Dinheiro (R$)</label><input type="number" id="valorDinMisto" step="0.01" class="purple-input"></div></div></div><div style="display: flex; gap: 10px; margin-top: 1rem;"><button class="btn-primary" style="flex: 1; background-color: var(--sunflower-gold);" onclick="confirmarDevolucaoLote()">Devolver Lote</button><button class="btn-primary" style="flex: 1;" onclick="confirmarVendaLote()">Confirmar Venda</button></div></div></div></div>
+    <div class="modal-overlay" id="modalAcaoLote">
+        <div class="modal-box" style="width: 90%; max-width: 400px;">
+            <div class="modal-header">
+                <h2>Validação de Lote</h2>
+                <button class="close-modal-btn" onclick="fecharModal('modalAcaoLote')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1rem;"><h3 style="color: var(--petal-pink); font-size: 1.5rem; margin-bottom: 5px;" id="acaoLoteNome">LOTE-XX</h3><p style="color: var(--dim-grey); font-weight: bold;">Aluno: <span id="acaoLoteAluno">Nome</span></p></div>
+                <input type="hidden" id="acaoLoteInput"><input type="hidden" id="acaoAlunoIdxInput">
+                <div class="form-group">
+                    <label style="font-weight: bold; color: var(--dim-grey);">Forma de Pagamento (R$ 20,00)</label>
+                    <div style="display: flex; gap: 15px; margin-top: 10px; margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="PIX" class="amarelo-radio" checked onchange="toggleMisto(false)"> PIX</label>
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Dinheiro" class="amarelo-radio" onchange="toggleMisto(false)"> Dinheiro</label>
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Misto" class="amarelo-radio" onchange="toggleMisto(true)"> Misto</label>
+                    </div>
+                    <div id="camposMisto" style="display: none; gap: 10px;">
+                        <div class="form-group" style="flex: 1;"><label>Valor PIX (R$)</label><input type="number" id="valorPixMisto" step="0.01" class="purple-input"></div>
+                        <div class="form-group" style="flex: 1;"><label>Valor Dinheiro (R$)</label><input type="number" id="valorDinMisto" step="0.01" class="purple-input"></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                    <button class="btn-primary" style="flex: 1; background-color: var(--sunflower-gold);" onclick="confirmarDevolucaoLote()">Devolver Lote</button>
+                    <button class="btn-primary" style="flex: 1;" onclick="confirmarVendaLote()">Confirmar Venda</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="modalCadastrarEducador"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Cadastrar Educador</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrarEducador')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrarEducador"><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey); margin-bottom: 5px; display: block;">Nome do Educador</label><input type="text" id="novoNomeEducador" class="purple-input" required></div><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey); margin-bottom: 5px; display: block;">Curso Responsável</label><input type="text" id="novoCursoEducador" class="purple-input" required placeholder="Ex: Auxiliar Administrativo"></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Salvar Educador</button></form></div></div></div>
     <div class="modal-overlay" id="modalCorteFoto" style="z-index: 10000;"><div class="modal-box" style="width: 95%; max-width: 500px;"><div class="modal-header"><h2>Ajustar Foto</h2><button class="close-modal-btn" onclick="fecharModal('modalCorteFoto')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding: 0;"><div class="img-container"><img id="imagemParaCorte" src="" alt="Imagem para cortar"></div><div style="padding: 1rem;"><button class="btn-primary" id="btnConfirmarCorte" style="width: 100%; background-color: var(--petal-pink);">Cortar e Salvar Foto</button></div></div></div></div>
     <div class="modal-overlay" id="modalErro"><div class="modal-box" style="width: 90%; max-width: 400px; text-align: center;"><div class="modal-header"><h2>Ops! Algo deu errado</h2><button class="close-modal-btn" onclick="fecharModal('modalErro')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding-top: 1rem;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--sunflower-gold); margin-bottom: 10px;">error</span><p class="modal-desc" id="textoModalErro" style="font-size: 1.05rem; color: var(--dim-grey); margin-bottom: 1.5rem;"></p><button class="btn-primary" style="background-color: var(--petal-pink); width: 100%;" onclick="fecharModal('modalErro')">Tentar Novamente</button></div></div></div>
     <div class="modal-overlay" id="modalSucesso"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Sucesso!</h2><button class="close-modal-btn" onclick="fecharModal('modalSucesso')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="text-align: center;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--petal-pink); margin-bottom: 1rem;">check_circle</span><p class="modal-desc" id="textoModalSucesso" style="font-size: 1.1rem; color: var(--dim-grey);"></p><button class="btn-primary" onclick="fecharModal('modalSucesso')" style="width: 100%;">Entendido</button></div></div></div>
