@@ -42,12 +42,12 @@
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
         
-        /* PAGINAÇÃO DISCRETA */
-        .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
-        .btn-page-discrete { background: #fcf9fc; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 1.2rem; color: var(--petal-pink); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: bold; }
-        .btn-page-discrete:hover:not(:disabled) { border-color: var(--petal-pink); background: white; }
-        .btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; }
-        .page-input-discrete { width: 50px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
+        /* Paginação Discreta */
+        .discrete-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+        .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
+        .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
+        .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
+        .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
     </style>
 </head>
@@ -93,7 +93,7 @@
                         </div>
                     </div>
                     <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table tabela-interativa" style="min-width: 800px;">
+                        <table class="data-table tabela-interativa" style="min-width: 900px;">
                             <thead><tr><th style="width: 50px;" class="text-center">Pos.</th><th style="width: 60px;">Foto</th><th>Nome do Educando</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaAlunos"></tbody>
                         </table>
@@ -124,25 +124,25 @@
 
                 <section id="secRankingEducandos" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educandos</h2>
-                    <input type="text" id="buscaRankingAlunoEdu" class="purple-input" placeholder="Pesquisar aluno no ranking..." style="margin-bottom: 1rem;">
+                    <input type="text" id="buscaRankingAlunoEdu" class="purple-input" placeholder="Pesquisar educando no ranking..." style="margin-bottom: 1rem;">
                     <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table" style="min-width: 800px;">
+                        <table class="data-table" style="min-width: 900px;">
                             <thead><tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome do Educando</th><th>Turma</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaRankingEducador"></tbody>
                         </table>
                     </div>
-                    <div id="pagRankingEducador"></div>
+                    <div id="pagRankingAlunosEdu"></div>
                 </section>
 
                 <section id="secRankingEducadores" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educadores</h2>
                     <div class="table-container" style="overflow-x: auto; width: 100%;">
-                        <table class="data-table" style="min-width: 600px;">
-                            <thead><tr><th class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr></thead>
+                        <table class="data-table" style="min-width: 700px;">
+                            <thead><tr><th style="width: 80px;" class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr></thead>
                             <tbody id="tabelaRankingEducadoresLista"></tbody>
                         </table>
                     </div>
-                    <div id="pagRankingEducadoresLista"></div>
+                    <div id="pagRankingEducadoresEdu"></div>
                 </section>
             </main>
         </div>
@@ -150,7 +150,7 @@
 
     <div class="modal-overlay" id="modalCadastrarEducando"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Vincular Educando e Foto</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrarEducando')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrarEducando"><div class="foto-upload-circle" onclick="document.getElementById('inputFotoEducando').click()"><span class="material-symbols-outlined icon-camera" id="iconCamera">add_a_photo</span><img id="previewFoto" src="" alt="Preview"></div><input type="file" id="inputFotoEducando" accept="image/*" capture="environment" style="display: none;" onchange="iniciarCorteFoto(event)"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Nome do Educando</label><div class="custom-select-wrapper" id="wrapperNomeEducando"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione o aluno da lista...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesNomeEducando"></div></div><input type="hidden" id="nomeSelectEducando" required></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Turma e Período</label><div class="custom-select-wrapper" id="wrapperTurmaEducando"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione a Turma...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options"><span class="custom-option" data-value="Turma 1">Turma 1 (Manhã)</span><span class="custom-option" data-value="Turma 2">Turma 2 (Manhã)</span><span class="custom-option" data-value="Turma 3">Turma 3 (Tarde)</span><span class="custom-option" data-value="Turma 4">Turma 4 (Tarde)</span></div></div><input type="hidden" id="turmaSelectEducando" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Ativar Educando</button></form></div></div></div>
     <div class="modal-overlay" id="modalAtribuirLote"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Atribuir Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAtribuirLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formAtribuirLote"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis na Sede</label><div class="checkbox-list-container" id="listaLotesCheckboxes"></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Selecione o Educando</label><div class="custom-select-wrapper" id="wrapperAlunoAtribuir"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Escolha um aluno da sua turma...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesAlunoAtribuir"></div></div><input type="hidden" id="alunoAtribuirSelect" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Atribuição</button></form></div></div></div>
-    
+
     <div class="modal-overlay" id="modalDetalhesAluno">
         <div class="modal-box" style="width: 90%; max-width: 450px;">
             <div class="modal-header">
@@ -159,7 +159,14 @@
             </div>
             <div class="modal-body" style="padding-top: 1rem;">
                 <div style="text-align: center; margin-bottom: 1rem;">
-                    <img src="" id="detalheFoto" class="table-avatar" style="width: 80px; height: 80px; margin: 0 auto 10px auto; display: block;">
+                    <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 10px auto; cursor: pointer; display: inline-block;" onclick="document.getElementById('inputEditFoto').click()" title="Alterar Foto">
+                        <img src="" id="detalheFoto" class="table-avatar" style="width: 100%; height: 100%; border-color: var(--petal-pink); margin: 0; display: block; object-fit: cover;">
+                        <div style="position: absolute; bottom: -2px; right: -5px; background: var(--petal-pink); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                        </div>
+                    </div>
+                    <input type="file" id="inputEditFoto" accept="image/*" capture="environment" style="display: none;" onchange="iniciarCorteEdicao(event)">
+                    
                     <h3 id="detalheNome" style="color: var(--dim-grey); margin-bottom: 5px; font-size: 1.4rem;">Nome do Aluno</h3>
                     <p id="detalheTurma" style="color: var(--petal-pink); font-size: 0.95rem; font-weight: 600;">Curso - Turma</p>
                 </div>
@@ -168,6 +175,10 @@
                     <div style="display: flex; justify-content: center; gap: 30px;">
                         <div><span class="material-symbols-outlined" style="color: var(--petal-pink); font-size: 28px;">headphones</span><br><strong style="font-size: 1.1rem;"><span id="detalheFone">0</span> Fone(s)</strong></div>
                         <div><span class="material-symbols-outlined" style="color: var(--sunflower-gold); font-size: 28px;">description</span><br><strong style="font-size: 1.1rem;"><span id="detalheCartelasGanhas">0</span> Cartela(s)</strong></div>
+                    </div>
+                    <div id="boxRetirarCartela" style="margin-top: 15px; display: none;">
+                        <p style="color: var(--obsidian); font-size: 0.85rem; margin-bottom: 8px;"><strong><span id="detalheCartelasPendentes"></span> cartela(s) extra(s)</strong> prontas para entrega.</p>
+                        <button class="btn-primary" id="btnRetirarCartela" style="width: 100%; background-color: var(--sunflower-gold); color: white;">Confirmar Retirada</button>
                     </div>
                 </div>
                 <div class="lotes-info-grid">
