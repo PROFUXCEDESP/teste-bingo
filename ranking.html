@@ -3,79 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEDESP Bingo - Ranking Geral</title>
+    <title>Ranking Oficial CEDESP</title>
+    <link rel="icon" href="assets/image/logo_cedesp.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+    <style>
+        body { background-color: #fcf9fc; padding-top: 2rem; padding-bottom: 3rem; }
+        .ranking-header { text-align: center; margin-bottom: 3rem; }
+        .ranking-header img { max-width: 250px; margin-bottom: 1rem; }
+        .ranking-header h1 { color: var(--petal-pink); font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        .ranking-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        .ranking-section { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(188, 104, 161, 0.1); margin-bottom: 3rem; }
+        .section-title { text-align: center; margin-bottom: 2rem; color: var(--dim-grey); font-size: 1.8rem; border: none; }
+        .purple-input { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc; color: var(--dim-grey); font-size: 1rem; outline: none; transition: all 0.3s ease; }
+        .purple-input:focus { border-color: var(--petal-pink) !important; box-shadow: 0 0 0 3px rgba(188, 104, 161, 0.2) !important; }
+        .loader { text-align: center; font-size: 1.5rem; color: var(--petal-pink); font-weight: bold; margin: 3rem 0; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* Paginação Discreta */
+        .discrete-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+        .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
+        .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
+        .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
+        .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
+        .page-input-discrete:focus { border-color: var(--petal-pink); }
+    </style>
 </head>
-<body class="dashboard-body" id="rankingPage">
+<body>
 
-    <div class="dashboard-wrapper">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP">
-                <button class="close-sidebar-btn" id="closeSidebar"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            
-            <ul class="sidebar-nav">
-                <li class="nav-item" onclick="window.location.href='educador.html'"><span class="material-symbols-outlined nav-icon">groups</span> <span class="nav-text">Minha Turma</span></li>
-                <li class="nav-item" onclick="window.location.href='vendas.html'"><span class="material-symbols-outlined nav-icon">bar_chart</span> <span class="nav-text">Vendas Geral</span></li>
-                <li class="nav-item" id="btnMenuCadastrar"><span class="material-symbols-outlined nav-icon">person_add</span> <span class="nav-text">Cadastrar Educando</span></li>
-                <li class="nav-item" id="btnMenuAtribuir"><span class="material-symbols-outlined nav-icon">assignment_ind</span> <span class="nav-text">Atribuir Lote</span></li>
-                <li class="nav-item active" onclick="window.location.href='ranking.html'"><span class="material-symbols-outlined nav-icon">social_leaderboard</span> <span class="nav-text">Ranking Educandos</span></li>
-            </ul>
+    <div class="ranking-header">
+        <img src="assets/image/logo_cedesp.png" alt="Logo CEDESP">
+        <h1>Ranking Oficial Bingo 2026</h1>
+    </div>
 
-            <div class="sidebar-footer">
-                <button class="btn-logout" onclick="window.location.href='index.html'"><span class="material-symbols-outlined nav-icon">logout</span> <span class="nav-text">Sair do Sistema</span></button>
-            </div>
-        </aside>
+    <div class="ranking-container">
+        <div id="loader" class="loader">Atualizando dados ao vivo...</div>
 
-        <div class="main-panel">
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="menu-toggle" id="openSidebar"><span class="material-symbols-outlined">menu</span></button>
-                    <h1 class="admin-title">Ranking Geral de Educandos</h1>
+        <div id="conteudoRanking" style="display: none;">
+            <div class="ranking-section">
+                <h2 class="section-title"><span class="material-symbols-outlined" style="font-size: 2.2rem; color: var(--sunflower-gold); vertical-align: middle;">emoji_events</span> Top Educandos</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 1rem; align-items: center;">
+                    <input type="text" id="buscaRankingPublico" class="purple-input" placeholder="Pesquisar aluno no ranking..." style="flex: 1;">
                 </div>
-                <div class="user-profile">
-                    <span class="user-name" id="nomeEducador">Carregando...</span> 
-                    <span class="user-badge" style="background-color: var(--sunflower-gold); color: white;">BINGO 2026</span>
+                <div class="table-container" style="overflow-x: auto; margin-bottom: 1rem;">
+                    <table class="data-table" style="min-width: 900px;">
+                        <thead>
+                            <tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome do Educando</th><th>Turma</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr>
+                        </thead>
+                        <tbody id="tabelaRankingAlunosPublico"></tbody>
+                    </table>
                 </div>
-            </header>
-
-            <main class="admin-container">
-                <h2 class="section-title" style="border:none; margin-bottom: 1rem;">Top Vendedores CEDESP</h2>
                 
-                <section class="partners-section">
-                    <div class="table-container">
-                        <table class="data-table tabela-interativa" style="min-width: 800px;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;" class="text-center">Pos.</th>
-                                    <th style="width: 60px;">Foto</th>
-                                    <th>Nome do Educando</th>
-                                    <th class="text-center">Retirados</th>
-                                    <th class="text-center">Vendidos</th>
-                                    <th class="text-center">Pendentes</th>
-                                    <th class="text-center">Cartelas Ganhas</th>
-                                    <th class="text-center">Fone</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaRankingGeral">
-                                <!-- Preenchido via JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            </main>
+                <div class="discrete-pagination">
+                    <button class="btn-page-discrete" onclick="mudarPaginaRankingPublico(-1)">&lt;</button>
+                    <input type="number" class="page-input-discrete" id="inputPgPub" value="1" min="1" onchange="irParaPaginaPub(this)">
+                    <span style="color:var(--dim-grey); font-size:0.9rem;">de <span id="totPgPub">1</span></span>
+                    <button class="btn-page-discrete" onclick="mudarPaginaRankingPublico(1)">&gt;</button>
+                </div>
+            </div>
+
+            <div class="ranking-section">
+                <h2 class="section-title"><span class="material-symbols-outlined" style="font-size: 2.2rem; color: var(--petal-pink); vertical-align: middle;">school</span> Top Educadores</h2>
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="data-table" style="min-width: 700px;">
+                        <thead>
+                            <tr><th class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr>
+                        </thead>
+                        <tbody id="tabelaRankingEducadoresPublico"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- MODAIS OMITIDOS AQUI PARA BREVIDADE, MAS DEIXE OS MESMOS 4 MODAIS DO EDUCADOR.HTML AQUI NO FINAL -->
-    <div class="modal-overlay" id="modalDetalhesAluno"><div class="modal-box" style="max-width: 450px;"><div class="modal-header"><h2>Ficha do Educando</h2><button class="close-modal-btn" onclick="fecharModal('modalDetalhesAluno')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding-top: 1rem;"><div style="text-align: center; margin-bottom: 1.5rem;"><img src="" id="detalheFoto" class="table-avatar" style="width: 80px; height: 80px; margin: 0 auto 10px auto; border-color: var(--petal-pink);"><h3 id="detalheNome" style="color: var(--dim-grey); margin-bottom: 5px; font-size: 1.4rem;">Nome do Aluno</h3><p id="detalheTurma" style="color: var(--petal-pink); font-size: 0.95rem; font-weight: 600;">Curso - Turma</p></div><div class="lotes-info-grid"><div class="lote-status-box"><span class="status-title" style="color: var(--petal-pink);">Lotes Vendidos (<span id="detalheQtdVendidos">0</span>)</span><div class="lotes-badges" id="detalheBadgesVendidos"></div></div><div class="lote-status-box"><span class="status-title" style="color: var(--sunflower-gold);">Lotes Pendentes (<span id="detalheQtdPendentes">0</span>)</span><div class="lotes-badges" id="detalheBadgesPendentes"></div></div><div class="lote-status-box"><span class="status-title" style="color: var(--dim-grey);">Lotes Devolvidos (<span id="detalheQtdDevolvidos">0</span>)</span><div class="lotes-badges" id="detalheBadgesDevolvidos"></div></div></div></div></div></div>
-    <div class="modal-overlay" id="modalCadastrar"><div class="modal-box"><div class="modal-header"><h2>Cadastrar Educando</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrar')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrar"><div class="photo-capture-container"><div class="photo-ellipse" id="btnTirarFoto"><span class="material-symbols-outlined icon-filled" style="font-size: 32px;">add_a_photo</span><span style="font-size: 0.85rem; margin-top: 5px; font-weight: 600;">Tirar Foto</span></div></div><div class="form-group"><label>Nome do Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectNomeEducando"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Selecione o educando</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesNomeEducando"></div></div><input type="hidden" id="nomeEducandoVal" required></div></div><div class="form-group"><label>Turma do Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectTurmaAluno"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Selecione a turma</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options"><span class="custom-option" data-value="Turma 1">Turma 1</span><span class="custom-option" data-value="Turma 2">Turma 2</span><span class="custom-option" data-value="Turma 3">Turma 3</span><span class="custom-option" data-value="Turma 4">Turma 4</span></div></div><input type="hidden" id="turmaAluno" required></div></div><button type="submit" class="btn-primary">Salvar Educando</button></form></div></div></div>
-    <div class="modal-overlay" id="modalAtribuir"><div class="modal-box"><div class="modal-header"><h2>Atribuir Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAtribuir')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formAtribuir"><div class="form-group" id="containerLotesAtribuir"><label>Lotes Disponíveis (Marque para atribuir)</label><div class="checkbox-list" id="listaLotesAtribuir"></div></div><div class="form-group"><label>Selecione o Educando</label><div class="custom-select-wrapper"><div class="custom-select" id="selectAlunoDestino"><div class="custom-select-trigger"><span class="trigger-text" style="color: #a0a0a0;">Escolha o aluno...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesAlunoDestino"></div></div><input type="hidden" id="alunoDestinoVal" required></div></div><button type="submit" class="btn-primary" id="btnConfirmarAtribuicao" disabled>Atribuir Lotes</button></form></div></div></div>
-    <div class="modal-overlay" id="modalSucesso"><div class="modal-box"><div class="modal-header"><h2>Sucesso!</h2><button class="close-modal-btn" onclick="fecharModal('modalSucesso')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="text-align: center;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--petal-pink); margin-bottom: 1rem;">check_circle</span><p class="modal-desc" id="textoModalSucesso" style="font-size: 1.1rem; color: var(--dim-grey);"></p><button class="btn-primary" onclick="fecharModal('modalSucesso')">Entendido</button></div></div></div>
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="js/app.js"></script>
+        function textoIgual(t1, t2) {
+            if(!t1 || !t2) return false;
+            return t1.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() === 
+                   t2.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+        }
+
+        let educandosGlobal = [];
+        let educadoresGlobal = [];
+        let paginaAtual = 1;
+        let termoBusca = "";
+
+        function calcularRecompensas(qtdVendidos) {
+            let fone = qtdVendidos >= 10 ? 1 : 0;
+            let cartelas = qtdVendidos >= 10 ? 1 + Math.floor((qtdVendidos - 10) / 5) : 0;
+            return { fone, cartelas };
+        }
+
+        function renderizarRankingPagina() {
+            let filtrados = [...educandosGlobal].sort((a, b) => b.lotesVendidos.length - a.lotesVendidos.length);
+            filtrados = filtrados.filter(a => a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0);
+
+            if(termoBusca) {
+                filtrados = filtrados.filter(a => a.nome.toLowerCase().includes(termoBusca.toLowerCase()));
+            }
+
+            const totalPaginas = Math.ceil(filtrados.length / 10) || 1;
+            if(paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+            if(paginaAtual < 1) paginaAtual = 1;
+
+            const inicio = (paginaAtual - 1) * 10;
+            const loteAtual = filtrados.slice(inicio, inicio + 10);
+
+            const tabelaAlunos = document.getElementById('tabelaRankingAlunosPublico');
+            tabelaAlunos.innerHTML = "";
+
+            loteAtual.forEach((aluno, index) => {
+                const posReal = inicio + index + 1;
+                const rec = calcularRecompensas(aluno.lotesVendidos.length);
+                const cartelasHTML = rec.cartelas > 0 ? `<div style="font-weight:bold; color:var(--sunflower-gold);">${rec.cartelas}</div>` : '-';
+                const foneHTML = rec.fone > 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink);">headphones</span>' : '-';
+                let posHtml = posReal === 1 ? '<span class="material-symbols-outlined" style="color:var(--sunflower-gold); font-size:2rem;">trophy</span>' : `<span style="font-weight:bold; font-size:1.2rem;">${posReal}º</span>`;
+                
+                tabelaAlunos.innerHTML += `<tr>
+                    <td class="td-center">${posHtml}</td>
+                    <td><img src="${aluno.foto}" class="table-avatar" style="width: 50px; height: 50px; border-radius: 50%;"></td>
+                    <td style="white-space: nowrap;"><strong style="font-size:1.1rem; color:var(--obsidian);">${aluno.nome}</strong><br><small style="color:#a0a0a0">Educador: ${aluno.educadorResponsavel}</small></td>
+                    <td style="color: var(--dim-grey); white-space: nowrap;">${aluno.turma}</td>
+                    <td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td>
+                    <td class="td-center highlight-purple" style="font-size:1.2rem; font-weight:bold;">${aluno.lotesVendidos.length}</td>
+                    <td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td>
+                    <td class="td-center">${cartelasHTML}</td>
+                    <td class="td-center">${foneHTML}</td>
+                </tr>`;
+            });
+
+            if (loteAtual.length === 0) tabelaAlunos.innerHTML = '<tr><td colspan="9" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum aluno encontrado no ranking.</td></tr>';
+            
+            document.getElementById("inputPgPub").value = paginaAtual;
+            document.getElementById("totPgPub").innerText = totalPaginas;
+        }
+
+        window.mudarPaginaRankingPublico = function(dir) {
+            paginaAtual += dir;
+            renderizarRankingPagina();
+        }
+
+        window.irParaPaginaPub = function(input) {
+            paginaAtual = parseInt(input.value) || 1;
+            renderizarRankingPagina();
+        }
+
+        document.getElementById('buscaRankingPublico').addEventListener('input', (e) => {
+            termoBusca = e.target.value;
+            paginaAtual = 1;
+            renderizarRankingPagina();
+        });
+
+        function sincronizarPublico() {
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'sincronizar_dados' }) })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    educandosGlobal = data.educandos.map(e => ({
+                        nome: e['Nome_Educando'] || e['Nome'], 
+                        turma: e['Turma'], 
+                        educadorResponsavel: e['Educador_Responsavel'] || '',
+                        foto: e['Foto_URL'] && String(e['Foto_URL']).trim() !== '' ? e['Foto_URL'] : `https://ui-avatars.com/api/?name=${e['Nome_Educando'] || e['Nome']}&background=BC68A1&color=fff`,
+                        lotesVendidos: e['Lotes_Vendidos'] ? String(e['Lotes_Vendidos']).split(',').map(s=>s.trim()).filter(Boolean) : [],
+                        lotesPendentes: e['Lotes_Pendentes'] ? String(e['Lotes_Pendentes']).split(',').map(s=>s.trim()).filter(Boolean) : []
+                    }));
+
+                    educadoresGlobal = data.educadores.map(e => {
+                        let vendidos = 0;
+                        educandosGlobal.forEach(al => { if(textoIgual(al.educadorResponsavel, e['Nome'])) vendidos += al.lotesVendidos.length; });
+                        return { nome: e['Nome'], curso: e['Curso Responsavel'], lotesVendidos: vendidos };
+                    });
+
+                    renderizarRankingPagina();
+
+                    const tabelaProf = document.getElementById('tabelaRankingEducadoresPublico');
+                    let rankingProf = [...educadoresGlobal].sort((a, b) => b.lotesVendidos - a.lotesVendidos);
+                    tabelaProf.innerHTML = "";
+                    rankingProf.forEach((prof, index) => {
+                        let posHtml = index === 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink); font-size:2rem;">workspace_premium</span>' : `<span style="font-weight:bold; font-size:1.2rem; color:var(--petal-pink);">${index + 1}º</span>`;
+                        const valorArrecadado = (prof.lotesVendidos * 20).toFixed(2).replace('.', ',');
+                        tabelaProf.innerHTML += `<tr>
+                            <td class="td-center">${posHtml}</td>
+                            <td style="white-space: nowrap;"><strong style="font-size:1.1rem; color:var(--obsidian);">${prof.nome}</strong></td>
+                            <td style="color: var(--dim-grey); white-space: nowrap;">${prof.curso}</td>
+                            <td class="td-center highlight-purple" style="font-weight: bold; font-size: 1.2rem;">${prof.lotesVendidos}</td>
+                            <td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td>
+                        </tr>`;
+                    });
+
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('conteudoRanking').style.display = 'block';
+                }
+            }).catch(err => {
+                document.getElementById('loader').innerText = "Erro ao carregar os dados ao vivo. Tente atualizar a página.";
+            });
+        }
+        
+        sincronizarPublico();
+    </script>
 </body>
 </html>
