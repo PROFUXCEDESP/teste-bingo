@@ -7,26 +7,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
-    const IMGBB_API_KEY = '699c158483746240a585454fdfb09cac';
+    
+    // ==========================================
+    // CLOUDINARY CONFIGURAÇÃO
+    // ==========================================
+    const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dliu0ck6y/image/upload'; 
+    const CLOUDINARY_PRESET = 'bingo_2026';
+    
     const userName = localStorage.getItem('usuarioLogado') || 'Administrador';
     
-    window.fotoFileGlobal = null; let cropperInstancia = null;
-    let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
-    let estoqueChartInstAdm = null; let financeiroChartInstAdm = null;
+    window.fotoFileGlobal = null; 
+    let cropperInstancia = null;
+    window.alunoEmFocoIdx = null; 
+    window.modoEdicaoFoto = false; // Flag para saber se estamos editando ou criando
+    
+    window.lotesValidadosNestaSessao = new Set(); 
 
-    window.caixaGlobal = { pixReais: 0.00, dinReais: 0.00 };
-    window.caixaGlobalBD = []; 
-    window.todosEducandosBD = []; window.mockEducadoresBD = [];
-    window.mockParceirosBD = []; window.lotesSedeBD = []; window.logsDoSistema = [];
-
-    // ==========================================
-    // ETAPA 2: TRAVA DE SEGURANÇA (Anti-Duplicação)
-    // ==========================================
-    window.lotesValidadosNestaSessao = new Set();
-
-    // ==========================================
-    // ETAPA 1: CONTROLE DE ESTADO E PAGINAÇÃO
-    // ==========================================
     window.pages = {
         rankAdm: { current: 1, term: "" },
         gestaoLotes: { current: 1, term: "" },
@@ -37,6 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
         rankEdu: { current: 1, term: "" },
         rankProfEdu: { current: 1 }
     };
+
+    let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
+    let estoqueChartInstAdm = null; let financeiroChartInstAdm = null;
+
+    window.caixaGlobal = { pixReais: 0.00, dinReais: 0.00 };
+    window.caixaGlobalBD = []; 
+    window.todosEducandosBD = []; window.mockEducadoresBD = [];
+    window.mockParceirosBD = []; window.lotesSedeBD = []; window.logsDoSistema = [];
 
     window.renderPaginationUI = function(containerId, key, totalItems, itemsPerPage, renderFunc) {
         const container = document.getElementById(containerId);
@@ -124,11 +128,9 @@ document.addEventListener("DOMContentLoaded", () => {
         todasSecoes.forEach(sec => sec.style.display = 'none');
         const todosNavs = document.querySelectorAll('.sidebar-nav .nav-item');
         todosNavs.forEach(nav => nav.classList.remove('active'));
-        
         const secClicada = document.getElementById(secId); if(secClicada) secClicada.style.display = 'block';
         const navClicado = document.getElementById(navId); if(navClicado) navClicado.classList.add('active');
         if(window.innerWidth <= 768) { const side = document.getElementById('sidebar'); if(side) side.classList.remove('open'); }
-        
         if(document.getElementById("educadorPage") && window.atualizarDashboardEducador) window.atualizarDashboardEducador();
         if(document.getElementById("adminPage") && window.atualizarDashboardsADM) window.atualizarDashboardsADM();
     }
@@ -141,9 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => sidebar.classList.remove('open'));
     }
 
-    // ==========================================
-    // CARGA DE DADOS DO BANCO
-    // ==========================================
     window.carregarDadosDoBanco = function(recarregarTelas = true) {
         const btnSync = document.getElementById('nomeEducador');
         if(btnSync) btnSync.innerText = "Sincronizando...";
@@ -165,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     cartelasEntregues: parseInt(e['Cartelas_Entregue']) || 0
                 }));
 
-                // MATEMÁTICA CORRIGIDA PARA OS GRÁFICOS NÃO TRAVAREM
                 window.mockEducadoresBD = data.educadores.map(e => {
                     let vendidos = 0; let pendentes = 0;
                     window.todosEducandosBD.forEach(al => {
@@ -224,6 +222,86 @@ document.addEventListener("DOMContentLoaded", () => {
         let fone = qtdVendidos >= 10 ? 1 : 0;
         let cartelas = qtdVendidos >= 10 ? 1 + Math.floor((qtdVendidos - 10) / 5) : 0;
         return { fone, cartelas };
+    }
+
+    // ==========================================
+    // CROP E CLOUDINARY (NOVO E EDIÇÃO)
+    // ==========================================
+    window.iniciarCorteFoto = function(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgToCrop = document.getElementById('imagemParaCorte'); imgToCrop.src = e.target.result;
+                window.modoEdicaoFoto = false; abrirModal('modalCorteFoto');
+                if(cropperInstancia) cropperInstancia.destroy();
+                cropperInstancia = new Cropper(imgToCrop, { aspectRatio: 1, viewMode: 1 });
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+        input.value = ''; 
+    }
+
+    // Função engatilhada ao clicar no lápis da ficha do aluno
+    window.iniciarCorteEdicao = function(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgToCrop = document.getElementById('imagemParaCorte'); imgToCrop.src = e.target.result;
+                window.modoEdicaoFoto = true; abrirModal('modalCorteFoto');
+                if(cropperInstancia) cropperInstancia.destroy();
+                cropperInstancia = new Cropper(imgToCrop, { aspectRatio: 1, viewMode: 1 });
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+        input.value = ''; 
+    }
+
+    const btnConfirmarCorte = document.getElementById('btnConfirmarCorte');
+    if(btnConfirmarCorte) {
+        btnConfirmarCorte.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(cropperInstancia) {
+                if (window.modoEdicaoFoto && window.alunoEmFocoIdx !== null) {
+                    // LÓGICA DE EDIÇÃO (Salva direto na nuvem e no Google Sheets)
+                    btnConfirmarCorte.innerText = "Enviando para a Nuvem..."; btnConfirmarCorte.disabled = true;
+                    cropperInstancia.getCroppedCanvas({ width: 300, height: 300 }).toBlob((blob) => {
+                        const formData = new FormData(); 
+                        formData.append('file', blob); 
+                        formData.append('upload_preset', CLOUDINARY_PRESET);
+
+                        fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+                        .then(r => r.json()).then(dataImg => {
+                            if(dataImg.secure_url) {
+                                const urlDaFoto = dataImg.secure_url;
+                                const aluno = window.todosEducandosBD[window.alunoEmFocoIdx];
+                                aluno.foto = urlDaFoto;
+                                document.getElementById('detalheFoto').src = urlDaFoto;
+                                
+                                if(document.getElementById("educadorPage")) window.atualizarDashboardEducador();
+                                if(document.getElementById("adminPage")) window.atualizarDashboardsADM();
+                                
+                                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atualizar_foto', nomeAluno: aluno.nome, fotoUrl: urlDaFoto }) });
+                                
+                                fecharModal('modalCorteFoto'); window.abrirModalSucesso("Foto atualizada com sucesso!");
+                                window.registrarLog("Edição de Foto", `Atualizou a foto do aluno ${aluno.nome} via Cloudinary`);
+                            } else { window.abrirModalErro("Erro do Cloudinary."); }
+                        }).catch(err => { window.abrirModalErro("Erro de rede ao enviar imagem."); })
+                        .finally(() => { btnConfirmarCorte.innerText = "Cortar e Salvar Foto"; btnConfirmarCorte.disabled = false; window.modoEdicaoFoto = false; });
+                    }, 'image/jpeg');
+                } else {
+                    // LÓGICA DE CADASTRO NOVO (Apenas guarda o arquivo para o Form)
+                    cropperInstancia.getCroppedCanvas({ width: 300, height: 300 }).toBlob((blob) => {
+                        window.fotoFileGlobal = blob;
+                        document.getElementById('previewFoto').src = URL.createObjectURL(blob);
+                        document.getElementById('previewFoto').style.display = 'block';
+                        document.getElementById('iconCamera').style.display = 'none';
+                        fecharModal('modalCorteFoto');
+                    }, 'image/jpeg');
+                }
+            }
+        });
     }
 
     // ==========================================
@@ -346,7 +424,6 @@ document.addEventListener("DOMContentLoaded", () => {
         renderPaginationUI('pagMinhaTurma', 'minhaTurma', filtrados.length, 10, 'renderMinhaTurmaPaginado');
     }
 
-    // Buscas
     const srchRankA = document.getElementById("buscaRankingAluno");
     if(srchRankA) srchRankA.addEventListener('input', (e) => { window.pages.rankAdm.term = e.target.value; window.pages.rankAdm.current = 1; window.renderRankingAlunosAdm(); });
     
@@ -403,6 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tabelaRankingEducadores = document.getElementById('tabelaRankingEducadoresLista');
             if(tabelaRankingEducadores) {
                 let rankingProf = [...window.mockEducadoresBD].sort((a, b) => b.lotesVendidos - a.lotesVendidos);
+                
                 const startIdx = (window.pages.rankProfEdu.current - 1) * 10;
                 const paginated = rankingProf.slice(startIdx, startIdx + 10);
 
@@ -424,7 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (todosMeusAlunosDB.length === 0) { optsCad += '<span class="custom-option" data-value="">Nenhum aluno no banco.</span>'; } 
                 else {
                     todosMeusAlunosDB.forEach(a => { 
-                        let lblFoto = a.foto.includes('ui-avatars') ? '<span style="color:#a0a0a0; font-size: 0.8rem;">(Sem Foto)</span>' : '<span style="color:var(--petal-pink); font-size: 0.8rem;">(Editar Foto)</span>';
+                        let lblFoto = a.foto.includes('ui-avatars') ? '<span style="color:#a0a0a0; font-size: 0.8rem;">(Sem Foto)</span>' : '<span style="color:var(--petal-pink); font-size: 0.8rem;">(Com Foto)</span>';
                         optsCad += `<span class="custom-option" data-value="${a.nome}">${a.nome} - ${lblFoto}</span>`; 
                     });
                 }
@@ -466,18 +544,24 @@ document.addEventListener("DOMContentLoaded", () => {
             formCadastrarEducando.addEventListener("submit", (e) => {
                 e.preventDefault();
                 const btn = formCadastrarEducando.querySelector("button[type='submit']");
-                btn.innerText = "Enviando Foto..."; btn.disabled = true;
+                btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
 
                 const nome = document.getElementById("nomeSelectEducando").value;
                 const turmaTexto = document.getElementById("turmaSelectEducando").value; 
                 if(!nome || !turmaTexto) { btn.disabled = false; btn.innerText = "Ativar Educando"; return window.abrirModalErro("Preencha todos os campos."); }
                 let periodo = (turmaTexto === "Turma 3" || turmaTexto === "Turma 4") ? "Tarde" : "Manhã";
 
-                if(window.fotoFileGlobal && IMGBB_API_KEY) {
-                    const formData = new FormData(); formData.append('image', window.fotoFileGlobal);
-                    fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, { method: 'POST', body: formData })
-                    .then(r => r.json()).then(dataImg => { salvarEducandoBanco(nome, turmaTexto, periodo, dataImg.data.url, btn); })
-                    .catch(err => { console.error(err); salvarEducandoBanco(nome, turmaTexto, periodo, "", btn); });
+                // UPLOAD PARA O CLOUDINARY
+                if(window.fotoFileGlobal && CLOUDINARY_URL) {
+                    const formData = new FormData(); 
+                    formData.append('file', window.fotoFileGlobal); 
+                    formData.append('upload_preset', CLOUDINARY_PRESET);
+                    
+                    fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+                    .then(r => r.json()).then(dataImg => {
+                        if(dataImg.secure_url) { salvarEducandoBanco(nome, turmaTexto, periodo, dataImg.secure_url, btn); } 
+                        else { window.abrirModalErro("Falha no Cloudinary: " + (dataImg.error ? dataImg.error.message : "Erro desconhecido")); btn.innerText = "Ativar Educando"; btn.disabled = false; }
+                    }).catch(err => { console.error(err); window.abrirModalErro("Erro de rede ao enviar a foto."); btn.innerText = "Ativar Educando"; btn.disabled = false; });
                 } else { salvarEducandoBanco(nome, turmaTexto, periodo, "", btn); }
             });
         }
@@ -633,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // ETAPA 2: MODAIS E TRAVA DE TRANSAÇÕES
+    // MODAIS E TRAVA DE TRANSAÇÕES
     // ==========================================
     window.abrirModal = function(id) { document.getElementById(id).classList.add('active'); }
     window.fecharModal = function(id) { document.getElementById(id).classList.remove('active'); }
