@@ -31,7 +31,7 @@
         .checkbox-list-container { max-height: 180px; overflow-y: auto; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
         .checkbox-item-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
         .checkbox-item-row:hover { background: #fafafa; }
-        
+        #modalTransferirLote .modal-box, #modalTransferirLote .modal-body { overflow: visible !important; }
         #modalDetalhesAluno .modal-box { max-height: 85vh; display: flex; flex-direction: column; }
         #modalDetalhesAluno .modal-body { overflow-y: auto; flex: 1; padding-bottom: 25px; padding-right: 5px; }
         #modalDetalhesAluno .modal-body::-webkit-scrollbar { width: 6px; }
@@ -42,12 +42,12 @@
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
         
-        /* Paginação Discreta */
-        .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
-        .btn-page-discrete { background: #fcf9fc; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 1.2rem; color: var(--petal-pink); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: bold; }
-        .btn-page-discrete:hover:not(:disabled) { border-color: var(--petal-pink); background: white; }
-        .btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; }
-        .page-input-discrete { width: 50px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
+        /* Nova Paginação Discreta */
+        .discrete-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+        .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
+        .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
+        .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
+        .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
     </style>
 </head>
@@ -98,19 +98,12 @@
                     </div>
                 </section>
 
-                <section id="secEngajamento" style="display: none;">
-                    <h2 class="section-title">Engajamento de Alunos</h2>
-                    <div class="dashboard-grid">
-                        <div class="kpi-card"><div class="kpi-title">Alunos Ativos</div><div class="kpi-value highlight-purple" id="kpiAtivos">0</div></div>
-                        <div class="kpi-card"><div class="kpi-title">Alunos Inativos</div><div class="kpi-value" style="color:#a0a0a0;" id="kpiInativos">0</div></div>
-                        <div class="kpi-card"><div class="kpi-title">Taxa de Adesão</div><div class="kpi-value highlight-yellow" id="kpiAdesao">0%</div><div class="kpi-subtitle" id="kpiTotalAlunos" style="color: var(--sunflower-gold); font-weight: bold;">De 0 alunos</div></div>
-                    </div>
-                </section>
+                <section id="secEngajamento" style="display: none;"><h2 class="section-title">Engajamento de Alunos</h2><div class="dashboard-grid" style="margin-bottom: 2rem;"><div class="kpi-card"><div class="kpi-title">Alunos Ativos</div><div class="kpi-value highlight-purple" id="kpiAtivos">0</div></div><div class="kpi-card"><div class="kpi-title">Alunos Inativos</div><div class="kpi-value" style="color:#a0a0a0;" id="kpiInativos">0</div></div><div class="kpi-card"><div class="kpi-title">Taxa de Adesão</div><div class="kpi-value highlight-yellow" id="kpiAdesao">0%</div><div class="kpi-subtitle" id="kpiTotalAlunos">De 0 alunos</div></div></div></section>
                 
                 <section id="secGestaoLotes" style="display: none;">
                     <h2 class="section-title">Validação de Lotes Pendentes</h2>
                     <input type="text" id="buscaGestaoLotes" class="purple-input" placeholder="Pesquisar educando por nome..." style="margin-bottom: 1rem;">
-                    <div class="table-container">
+                    <div class="table-container" style="overflow-x: auto;">
                         <table class="data-table" style="width: 100%;">
                             <thead><tr><th>Foto</th><th>Nome do Aluno</th><th>Curso/Turma</th><th class="text-center">Qtd. Pendente</th></tr></thead>
                             <tbody id="tabelaGestaoLotes"></tbody>
@@ -119,14 +112,7 @@
                     <div id="pagLotes"></div>
                 </section>
                 
-                <section id="secParceiros" style="display: none;">
-                    <h2 class="section-title">Gestão de Parceiros</h2>
-                    <div class="dashboard-grid" style="margin-bottom: 2rem;">
-                        <div class="kpi-card"><div class="kpi-title">Arrecadado Parceiros</div><div class="kpi-value highlight-purple" id="kpiParceirosArrecadado">R$ 0,00</div></div>
-                        <div class="kpi-card"><div class="kpi-title">Projetado Parceiros</div><div class="kpi-value highlight-yellow" id="kpiParceirosProjetado">R$ 0,00</div></div>
-                    </div>
-                    <div class="table-container"><table class="data-table" style="width: 100%;"><thead><tr><th>Parceiro</th><th class="text-center">Lotes</th><th class="text-center">Status</th><th class="text-center">Ação</th></tr></thead><tbody id="tabelaParceiros"></tbody></table></div>
-                </section>
+                <section id="secParceiros" style="display: none;"><h2 class="section-title">Gestão de Parceiros</h2><div class="dashboard-grid" style="margin-bottom: 2rem;"><div class="kpi-card"><div class="kpi-title">Arrecadado Parceiros</div><div class="kpi-value highlight-purple" id="kpiParceirosArrecadado">R$ 0,00</div></div><div class="kpi-card"><div class="kpi-title">Projetado Parceiros</div><div class="kpi-value highlight-yellow" id="kpiParceirosProjetado">R$ 0,00</div></div></div><div class="table-container"><table class="data-table" style="width: 100%;"><thead><tr><th>Parceiro</th><th class="text-center">Lotes</th><th class="text-center">Status</th><th class="text-center">Ação</th></tr></thead><tbody id="tabelaParceiros"></tbody></table></div></section>
                 
                 <section id="secRankingAlunos" style="display: none;">
                     <h2 class="section-title">Ranking Geral de Educandos</h2>
@@ -179,36 +165,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalTransferirLote">
-        <div class="modal-box" style="width: 90%; max-width: 450px;">
-            <div class="modal-header">
-                <h2>Transferir Lotes da Sede</h2>
-                <button class="close-modal-btn" onclick="fecharModal('modalTransferirLote')"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="modal-body">
-                <form id="formTransferirLote">
-                    <div class="form-group">
-                        <label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis:</label>
-                        <div class="checkbox-list-container" id="listaLotesSede" style="margin-bottom: 15px;"></div>
-                    </div>
-                    <div class="form-group">
-                        <label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Para o Educador:</label>
-                        <div class="custom-select-wrapper" id="wrapperEducadorDestino">
-                            <div class="custom-select">
-                                <div class="custom-select-trigger">
-                                    <span class="trigger-text" style="color: var(--dim-grey);">Selecione o destino...</span>
-                                    <span class="material-symbols-outlined arrow-icon">expand_more</span>
-                                </div>
-                                <div class="custom-options" id="opcoesEducadorDestino"></div>
-                            </div>
-                            <input type="hidden" id="educadorDestinoVal" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Transferência</button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="modalTransferirLote"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Transferir Lotes da Sede</h2><button class="close-modal-btn" onclick="fecharModal('modalTransferirLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formTransferirLote"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis:</label><div class="checkbox-list-container" id="listaLotesSede" style="margin-bottom: 15px;"></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Para o Educador:</label><div class="custom-select-wrapper" id="wrapperEducadorDestino"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione o destino...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesEducadorDestino"></div></div><input type="hidden" id="educadorDestinoVal" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Transferência</button></form></div></div></div>
     
     <div class="modal-overlay" id="modalDetalhesAluno">
         <div class="modal-box" style="width: 90%; max-width: 450px;">
@@ -229,6 +186,7 @@
                     <h3 id="detalheNome" style="color: var(--dim-grey); margin-bottom: 5px; font-size: 1.4rem;">Nome do Aluno</h3>
                     <p id="detalheTurma" style="color: var(--petal-pink); font-size: 0.95rem; font-weight: 600;">Curso - Turma</p>
                 </div>
+                
                 <div style="background: rgba(188, 104, 161, 0.05); padding: 15px; border: 1px dashed var(--petal-pink); border-radius: 8px; text-align: center; margin-bottom: 1rem;">
                     <h4 style="color: var(--dim-grey); margin-bottom: 10px;">Conquistas de Venda</h4>
                     <div style="display: flex; justify-content: center; gap: 30px;">
@@ -249,34 +207,7 @@
         </div>
     </div>
     
-    <div class="modal-overlay" id="modalAcaoLote">
-        <div class="modal-box" style="width: 90%; max-width: 400px;">
-            <div class="modal-header">
-                <h2>Validação de Lote</h2>
-                <button class="close-modal-btn" onclick="fecharModal('modalAcaoLote')"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 1rem;"><h3 style="color: var(--petal-pink); font-size: 1.5rem; margin-bottom: 5px;" id="acaoLoteNome">LOTE-XX</h3><p style="color: var(--dim-grey); font-weight: bold;">Aluno: <span id="acaoLoteAluno">Nome</span></p></div>
-                <input type="hidden" id="acaoLoteInput"><input type="hidden" id="acaoAlunoIdxInput">
-                <div class="form-group">
-                    <label style="font-weight: bold; color: var(--dim-grey);">Forma de Pagamento (R$ 20,00)</label>
-                    <div style="display: flex; gap: 15px; margin-top: 10px; margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="PIX" class="amarelo-radio" checked onchange="toggleMisto(false)"> PIX</label>
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Dinheiro" class="amarelo-radio" onchange="toggleMisto(false)"> Dinheiro</label>
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Misto" class="amarelo-radio" onchange="toggleMisto(true)"> Misto</label>
-                    </div>
-                    <div id="camposMisto" style="display: none; gap: 10px;">
-                        <div class="form-group" style="flex: 1;"><label>Valor PIX (R$)</label><input type="number" id="valorPixMisto" step="0.01" class="purple-input"></div>
-                        <div class="form-group" style="flex: 1;"><label>Valor Dinheiro (R$)</label><input type="number" id="valorDinMisto" step="0.01" class="purple-input"></div>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                    <button class="btn-primary" style="flex: 1; background-color: var(--sunflower-gold);" onclick="confirmarDevolucaoLote()">Devolver Lote</button>
-                    <button class="btn-primary" style="flex: 1;" onclick="confirmarVendaLote()">Confirmar Venda</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="modalAcaoLote"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Validação de Lote</h2><button class="close-modal-btn" onclick="fecharModal('modalAcaoLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><div style="text-align: center; margin-bottom: 1rem;"><h3 style="color: var(--petal-pink); font-size: 1.5rem; margin-bottom: 5px;" id="acaoLoteNome">LOTE-XX</h3><p style="color: var(--dim-grey); font-weight: bold;">Aluno: <span id="acaoLoteAluno">Nome</span></p></div><input type="hidden" id="acaoLoteInput"><input type="hidden" id="acaoAlunoIdxInput"><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey);">Forma de Pagamento (R$ 20,00)</label><div style="display: flex; gap: 15px; margin-top: 10px; margin-bottom: 15px;"><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="PIX" class="amarelo-radio" checked onchange="toggleMisto(false)"> PIX</label><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Dinheiro" class="amarelo-radio" onchange="toggleMisto(false)"> Dinheiro</label><label style="display: flex; align-items: center; cursor: pointer; color: var(--dim-grey); font-weight: 600;"><input type="radio" name="formaPagamentoLote" value="Misto" class="amarelo-radio" onchange="toggleMisto(true)"> Misto</label></div><div id="camposMisto" style="display: none; gap: 10px;"><div class="form-group" style="flex: 1;"><label>Valor PIX (R$)</label><input type="number" id="valorPixMisto" step="0.01" class="purple-input"></div><div class="form-group" style="flex: 1;"><label>Valor Dinheiro (R$)</label><input type="number" id="valorDinMisto" step="0.01" class="purple-input"></div></div></div><div style="display: flex; gap: 10px; margin-top: 1rem;"><button class="btn-primary" style="flex: 1; background-color: var(--sunflower-gold);" onclick="confirmarDevolucaoLote()">Devolver Lote</button><button class="btn-primary" style="flex: 1;" onclick="confirmarVendaLote()">Confirmar Venda</button></div></div></div></div>
     
     <div class="modal-overlay" id="modalCadastrarEducador"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Cadastrar Educador</h2><button class="close-modal-btn" onclick="fecharModal('modalCadastrarEducador')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formCadastrarEducador"><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey); margin-bottom: 5px; display: block;">Nome do Educador</label><input type="text" id="novoNomeEducador" class="purple-input" required></div><div class="form-group"><label style="font-weight: bold; color: var(--dim-grey); margin-bottom: 5px; display: block;">Curso Responsável</label><input type="text" id="novoCursoEducador" class="purple-input" required placeholder="Ex: Auxiliar Administrativo"></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Salvar Educador</button></form></div></div></div>
     <div class="modal-overlay" id="modalCorteFoto" style="z-index: 10000;"><div class="modal-box" style="width: 95%; max-width: 500px;"><div class="modal-header"><h2>Ajustar Foto</h2><button class="close-modal-btn" onclick="fecharModal('modalCorteFoto')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding: 0;"><div class="img-container"><img id="imagemParaCorte" src="" alt="Imagem para cortar"></div><div style="padding: 1rem;"><button class="btn-primary" id="btnConfirmarCorte" style="width: 100%; background-color: var(--petal-pink);">Cortar e Salvar Foto</button></div></div></div></div>
