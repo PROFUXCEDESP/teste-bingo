@@ -41,15 +41,6 @@
         .chart-wrapper { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-top: 15px;}
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
-        
-        /* Paginação Discreta */
-        .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
-        .btn-page-discrete { background: #fcf9fc; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 1.2rem; color: var(--petal-pink); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: bold; }
-        .btn-page-discrete:hover:not(:disabled) { border-color: var(--petal-pink); background: white; }
-        .btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; }
-        .page-input-discrete { width: 50px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
-        .page-input-discrete:focus { border-color: var(--petal-pink); }
-        .data-table th, .data-table td { white-space: nowrap !important; }
     </style>
 </head>
 <body class="dashboard-body" id="educadorPage">
@@ -93,7 +84,7 @@
                             <input type="hidden" id="filtroTurmaAluno" value="Todas">
                         </div>
                     </div>
-                    <div class="table-container" style="overflow-x: auto;">
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
                         <table class="data-table tabela-interativa" style="width: 100%;">
                             <thead><tr><th style="width: 50px;" class="text-center">Pos.</th><th style="width: 60px;">Foto</th><th>Nome do Educando</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaAlunos"></tbody>
@@ -126,24 +117,24 @@
                 <section id="secRankingEducandos" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educandos</h2>
                     <input type="text" id="buscaRankingAlunoEdu" class="purple-input" placeholder="Pesquisar educando no ranking..." style="margin-bottom: 1rem;">
-                    <div class="table-container" style="overflow-x: auto;">
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
                         <table class="data-table" style="width: 100%;">
                             <thead><tr><th class="text-center">Pos.</th><th>Foto</th><th>Nome do Educando</th><th>Turma</th><th class="text-center">Retirados</th><th class="text-center">Vendidos</th><th class="text-center">Pendentes</th><th class="text-center">Cartelas Ganhas</th><th class="text-center">Fone</th></tr></thead>
                             <tbody id="tabelaRankingEducador"></tbody>
                         </table>
                     </div>
-                    <div id="pagRankingAlunosEdu"></div>
+                    <div id="pagRankingEducador"></div>
                 </section>
 
                 <section id="secRankingEducadores" style="display: none;">
                     <h2 class="section-title" style="border: none;">Ranking Global de Educadores</h2>
-                    <div class="table-container" style="overflow-x: auto;">
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
                         <table class="data-table" style="width: 100%;">
                             <thead><tr><th style="width: 80px;" class="text-center">Posição</th><th>Nome do Educador</th><th>Curso</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr></thead>
                             <tbody id="tabelaRankingEducadoresLista"></tbody>
                         </table>
                     </div>
-                    <div id="pagRankingEducadoresEdu"></div>
+                    <div id="pagRankingEducadoresLista"></div>
                 </section>
             </main>
         </div>
