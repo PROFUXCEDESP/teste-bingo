@@ -533,3 +533,14 @@ select.select-nativo { appearance: none; background-image: url("data:image/svg+x
 .btn-page-discrete:disabled { color: #ccc; border-color: #eee; cursor: not-allowed; transform: none; }
 .page-input-discrete { width: 45px; height: 32px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
 .page-input-discrete:focus { border-color: var(--petal-pink); }
+.data-table th, .data-table td { white-space: nowrap !important; }
+
+/* Tira a barra de rolagem dos modais curtos e deixa a caixa esticar */
+#modalAcaoLote .modal-body,
+#modalAtribuirLote .modal-body,
+#modalTransferirLote .modal-body,
+#modalCadastrarEducador .modal-body {
+    overflow-y: visible !important;
+    max-height: none !important;
+    padding-bottom: 20px;
+}
