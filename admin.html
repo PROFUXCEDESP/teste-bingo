@@ -42,13 +42,15 @@
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
         
-        /* Nova Paginação Discreta */
         .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
         .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
         .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
         .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
         .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
+        
+        /* Ajuste para remover as bordas esquerdas dos cards do dashboard */
+        .kpi-card { border-left: none !important; }
     </style>
 </head>
 <body class="dashboard-body" id="adminPage">
@@ -63,7 +65,6 @@
                 <li class="nav-item" id="navEngajamento" onclick="mudarAbaEducador('secEngajamento', 'navEngajamento')"><span class="material-symbols-outlined nav-icon">monitoring</span> <span class="nav-text">Engajamento</span></li>
                 <li class="nav-item" id="navGestaoLotes" onclick="mudarAbaEducador('secGestaoLotes', 'navGestaoLotes')"><span class="material-symbols-outlined nav-icon">inventory_2</span> <span class="nav-text">Gestão de Lotes</span></li>
                 
-                <!-- NOVOS BOTÕES DE PARCEIROS NO MENU -->
                 <li class="nav-item" onclick="abrirModal('modalCadastrarParceiro')"><span class="material-symbols-outlined nav-icon">storefront</span> <span class="nav-text" style="color:#4CAF50;">Cadastrar Parceiro</span></li>
                 <li class="nav-item" onclick="abrirModal('modalAtribuirLoteParceiro')"><span class="material-symbols-outlined nav-icon">add_business</span> <span class="nav-text" style="color:#4CAF50;">Lote para Parceiro</span></li>
                 
@@ -85,27 +86,34 @@
             </header>
 
             <main class="admin-container">
-                <!-- NOVA SESSÃO DE VISÃO GERAL -->
                 <section id="secVisaoGeral">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                         <h2 class="section-title" style="margin-bottom: 0; border: none;">Dashboard Financeiro</h2>
                         <button class="btn-primary" onclick="abrirModal('modalTransferirLote')"><span class="material-symbols-outlined">sync_alt</span> Transferir Lotes</button>
                     </div>
                     
-                    <div class="dashboard-grid" style="margin-bottom: 1.5rem;">
-                        <div class="kpi-card" style="border-left: 4px solid var(--petal-pink);">
+                    <div class="dashboard-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                        <div class="kpi-card">
                             <div class="kpi-title">Vendas Educandos</div>
                             <div class="kpi-value highlight-purple" id="kpiVendasEducandos">R$ 0,00</div>
                         </div>
-                        <div class="kpi-card" style="border-left: 4px solid var(--sunflower-gold);">
+                        <div class="kpi-card">
                             <div class="kpi-title">Vendas Equipe Direta</div>
                             <div class="kpi-value highlight-purple" id="kpiVendasEquipe">R$ 0,00</div>
                         </div>
-                        <div class="kpi-card" style="border-left: 4px solid #4CAF50;">
+                        <div class="kpi-card">
                             <div class="kpi-title">Vendas Parceiros</div>
                             <div class="kpi-value highlight-purple" id="kpiVendasParceiros">R$ 0,00</div>
                         </div>
-                        <div class="kpi-card" style="border-left: 4px solid var(--dim-grey);">
+                        <div class="kpi-card">
+                            <div class="kpi-title">Caixa PIX</div>
+                            <div class="kpi-value highlight-purple" id="kpiCaixaPix">R$ 0,00</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-title">Caixa Dinheiro</div>
+                            <div class="kpi-value highlight-purple" id="kpiCaixaDinheiro">R$ 0,00</div>
+                        </div>
+                        <div class="kpi-card">
                             <div class="kpi-title">Arrecadação Global</div>
                             <div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal">R$ 0,00</div>
                         </div>
@@ -119,10 +127,8 @@
 
                 <section id="secEngajamento" style="display: none;"><h2 class="section-title">Engajamento de Alunos</h2><div class="dashboard-grid" style="margin-bottom: 2rem;"><div class="kpi-card"><div class="kpi-title">Alunos Ativos</div><div class="kpi-value highlight-purple" id="kpiAtivos">0</div></div><div class="kpi-card"><div class="kpi-title">Alunos Inativos</div><div class="kpi-value" style="color:#a0a0a0;" id="kpiInativos">0</div></div><div class="kpi-card"><div class="kpi-title">Taxa de Adesão</div><div class="kpi-value highlight-yellow" id="kpiAdesao">0%</div><div class="kpi-subtitle" id="kpiTotalAlunos">De 282 alunos</div></div></div></section>
                 
-                <!-- GESTÃO DE LOTES AJUSTADA -->
                 <section id="secGestaoLotes" style="display: none;">
                     <h2 class="section-title">Validação de Lotes Pendentes</h2>
-                    <!-- O ID da busca foi atualizado para corresponder ao app.js -->
                     <input type="text" id="buscaLotesInput" class="purple-input" placeholder="Pesquisar por nome de educando, equipe ou parceiro..." style="margin-bottom: 1rem;">
                     <div class="table-container" style="overflow-x: auto;">
                         <table class="data-table" style="width: 100%;">
@@ -186,7 +192,6 @@
         </div>
     </div>
 
-    <!-- MODAIS DO SISTEMA -->
     <div class="modal-overlay" id="modalTransferirLote"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Transferir Lotes da Sede</h2><button class="close-modal-btn" onclick="fecharModal('modalTransferirLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formTransferirLote"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis:</label><div class="checkbox-list-container" id="listaLotesSede" style="margin-bottom: 15px;"></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Para o Educador:</label><div class="custom-select-wrapper" id="wrapperEducadorDestino"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione o destino...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesEducadorDestino"></div></div><input type="hidden" id="educadorDestinoVal" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Transferência</button></form></div></div></div>
     
     <div class="modal-overlay" id="modalDetalhesAluno">
@@ -236,7 +241,6 @@
     <div class="modal-overlay" id="modalErro"><div class="modal-box" style="width: 90%; max-width: 400px; text-align: center;"><div class="modal-header"><h2>Ops! Algo deu errado</h2><button class="close-modal-btn" onclick="fecharModal('modalErro')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="padding-top: 1rem;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--sunflower-gold); margin-bottom: 10px;">error</span><p class="modal-desc" id="textoModalErro" style="font-size: 1.05rem; color: var(--dim-grey); margin-bottom: 1.5rem;"></p><button class="btn-primary" style="background-color: var(--petal-pink); width: 100%;" onclick="fecharModal('modalErro')">Tentar Novamente</button></div></div></div>
     <div class="modal-overlay" id="modalSucesso"><div class="modal-box" style="width: 90%; max-width: 400px;"><div class="modal-header"><h2>Sucesso!</h2><button class="close-modal-btn" onclick="fecharModal('modalSucesso')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body" style="text-align: center;"><span class="material-symbols-outlined" style="font-size: 56px; color: var(--petal-pink); margin-bottom: 1rem;">check_circle</span><p class="modal-desc" id="textoModalSucesso" style="font-size: 1.1rem; color: var(--dim-grey);"></p><button class="btn-primary" onclick="fecharModal('modalSucesso')" style="width: 100%;">Entendido</button></div></div></div>
 
-    <!-- NOVOS MODAIS: CADASTRAR PARCEIRO -->
     <div class="modal-overlay" id="modalCadastrarParceiro">
         <div class="modal-box" style="width: 90%; max-width: 450px;">
             <div class="modal-header">
@@ -259,7 +263,6 @@
         </div>
     </div>
 
-    <!-- NOVOS MODAIS: ATRIBUIR LOTE PARCEIRO -->
     <div class="modal-overlay" id="modalAtribuirLoteParceiro">
         <div class="modal-box" style="width: 90%; max-width: 450px;">
             <div class="modal-header">
