@@ -50,10 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_log', dataHora, responsavel: userName, sessao: 'Web', acao, detalhe, localizacao: 'Sistema Web' }) });
     }
 
-    // Gerenciador de cliques para fechar os Custom Selects abertos
     window.addEventListener('click', () => { document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open')); });
 
-    // Configuração de gatilho para os Custom Selects gerados dinamicamente
     document.addEventListener('click', (e) => {
         const trigger = e.target.closest('.custom-select-trigger');
         if (trigger) {
@@ -143,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return { fone, cartelas };
     }
 
-    // RENDERS UNIFICADOS (Busca única para Alunos, Equipe e Parceiros)
     window.renderGestaoLotesPaginado = function() {
         const tabela = document.getElementById('tabelaGestaoLotes'); if(!tabela) return;
         
@@ -168,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
         }).join('') || `<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhum lote pendente para o critério digitado.</td></tr>`;
         
-        renderPaginationUI('pagLotes', 'gestaoLotes', filtrados.length, 10, 'renderGestaoLotesPaginado');
+        window.renderPaginationUI('pagLotes', 'gestaoLotes', filtrados.length, 10, 'renderGestaoLotesPaginado');
     }
 
     const adminPage = document.getElementById("adminPage");
@@ -176,13 +173,19 @@ document.addEventListener("DOMContentLoaded", () => {
         
         window.atualizarDashboardsADM = function() {
             let vEdu = 0, vEquipe = 0, vParc = 0;
+            let vPix = 0, vDin = 0;
             
             window.caixaGlobalBD.forEach(tx => {
                 let val = parseFloat(tx['Valor']) || parseFloat(tx['Valor_Total']) || 0;
                 let cat = tx['Categoria'] || 'Educando';
+                let met = String(tx['Metodo'] || tx['Forma_Pagamento'] || '').toUpperCase();
+                
                 if(cat === 'Equipe') vEquipe += val;
                 else if(cat === 'Parceiro') vParc += val;
                 else vEdu += val;
+
+                if(met.includes('PIX')) vPix += val;
+                else if(met.includes('DINHEIRO') || met.includes('ESPECIE')) vDin += val;
             });
 
             const vTotal = vEdu + vEquipe + vParc;
@@ -191,10 +194,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if(document.getElementById('kpiVendasEquipe')) document.getElementById('kpiVendasEquipe').innerText = `R$ ${vEquipe.toFixed(2).replace('.', ',')}`;
             if(document.getElementById('kpiVendasParceiros')) document.getElementById('kpiVendasParceiros').innerText = `R$ ${vParc.toFixed(2).replace('.', ',')}`;
             if(document.getElementById('kpiVendasReaisGlobal')) document.getElementById('kpiVendasReaisGlobal').innerText = `R$ ${vTotal.toFixed(2).replace('.', ',')}`;
+            if(document.getElementById('kpiCaixaPix')) document.getElementById('kpiCaixaPix').innerText = `R$ ${vPix.toFixed(2).replace('.', ',')}`;
+            if(document.getElementById('kpiCaixaDinheiro')) document.getElementById('kpiCaixaDinheiro').innerText = `R$ ${vDin.toFixed(2).replace('.', ',')}`;
 
             window.renderGestaoLotesPaginado();
 
-            // RANKING INTERNO DE EDUCADORES COM FILTRO ADM (IGNORA ADMs NO PLACAR)
             const tabelaRankingEducadoresADM = document.getElementById('tabelaRankingEducadoresADM');
             if(tabelaRankingEducadoresADM) {
                 const nomesExcluidos = ['jhersyka', 'debora', 'bruna'];
@@ -210,10 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 tabelaRankingEducadoresADM.innerHTML = paginated.map((prof, index) => {
                     return `<tr><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey);">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td></tr>`;
                 }).join('');
-                renderPaginationUI('pagRankingEducadores', 'rankProfAdm', rankingProf.length, 10, 'atualizarDashboardsADM');
+                window.renderPaginationUI('pagRankingEducadores', 'rankProfAdm', rankingProf.length, 10, 'atualizarDashboardsADM');
             }
 
-            // POPULAR COMPONENTES CHECKBOX (FILTRO PARC)
             const listaLotesParceiros = document.getElementById("listaLotesParceirosCheckboxes");
             if(listaLotesParceiros) {
                 let htmlLotes = '';
@@ -232,7 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 listaLotesParceiros.innerHTML = htmlLotes || '<div style="padding:15px; text-align:center; color:#a0a0a0;">Nenhum lote contendo "PARC" vago na Sede.</div>';
             }
 
-            // POPULAR SELECT CUSTOMIZADO DE PARCEIROS
             const selectParceiroAttr = document.getElementById("opcoesParceiroAtribuir");
             if(selectParceiroAttr) {
                 let opts = '';
@@ -242,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        // EVENTOS DE SUBMIT: CADASTRO PARCEIRO
         const formCadastrarParceiro = document.getElementById("formCadastrarParceiro");
         if(formCadastrarParceiro) {
             formCadastrarParceiro.addEventListener("submit", (e) => {
@@ -265,7 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // EVENTOS DE SUBMIT: ATRIBUIR LOTE PARCEIRO
         const formAtribuirLoteParceiro = document.getElementById("formAtribuirLoteParceiro");
         if(formAtribuirLoteParceiro) {
             formAtribuirLoteParceiro.addEventListener("submit", (e) => {
@@ -290,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Ouvinte da barra de pesquisa de lotes na administração
         const buscaLotesInput = document.getElementById('buscaLotesInput');
         if(buscaLotesInput) {
             buscaLotesInput.addEventListener('input', (e) => {
@@ -301,9 +300,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ==========================================
-    // MODAIS E TRANSAÇÕES GLOBAIS
-    // ==========================================
     window.abrirModal = function(id) { document.getElementById(id).classList.add('active'); }
     window.fecharModal = function(id) { document.getElementById(id).classList.remove('active'); }
     window.abrirModalSucesso = function(txt) { document.getElementById('textoModalSucesso').innerText = txt; abrirModal('modalSucesso'); }
@@ -316,15 +312,16 @@ document.addEventListener("DOMContentLoaded", () => {
         
         let pessoa = (tipo === 'Parceiro') ? window.todosParceirosBD[idx] : window.todosEducandosBD[idx];
         
-        const elFoto = document.getElementById('detalheFoto'); if(elFoto) elFoto.src = pessoa.foto;
-        const elNome = document.getElementById('detalheNome'); if(elNome) elNome.innerText = ...
+        const elFoto = document.getElementById('detalheFoto'); if(elFoto) elFoto.src = ...;
+        if(elFoto) elFoto.src = pessoa.foto;
+        const elNome = document.getElementById('detalheNome'); if(elNome) elNome.innerText = pessoa.nome;
         const elTurma = document.getElementById('detalheTurma'); if(elTurma) elTurma.innerText = `${pessoa.curso} - ${tipo}`;
         
         const recompensas = calcularRecompensas(pessoa.lotesVendidos.length);
         const elFone = document.getElementById('detalheFone'); if(elFone) elFone.innerText = recompensas.fone;
         const elCartelas = document.getElementById('detalheCartelasGanhas'); if(elCartelas) elCartelas.innerText = recompensas.cartelas;
 
-        const elVendidos = document.getElementById('detalheQtdVendidos'); if(elVendidos) elVendidos.innerText = ...
+        const elVendidos = document.getElementById('detalheQtdVendidos'); if(elVendidos) elVendidos.innerText = pessoa.lotesVendidos.length;
         const elPendentes = document.getElementById('detalheQtdPendentes'); if(elPendentes) elPendentes.innerText = pessoa.lotesPendentes.length;
         
         const badgeVendidos = pessoa.lotesVendidos.length ? pessoa.lotesVendidos.map(l => `<span class="badge-lote">${l}</span>`).join('') : '<span class="badge-lote vazio">Nenhum</span>';
