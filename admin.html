@@ -42,15 +42,13 @@
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
         
+        /* Paginação Discreta */
         .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
         .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
         .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
         .btn-page-discrete:disabled { color: #ccc; cursor: not-allowed; transform: none; }
         .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
-        
-        /* Ajuste para remover as bordas esquerdas dos cards do dashboard */
-        .kpi-card { border-left: none !important; }
     </style>
 </head>
 <body class="dashboard-body" id="adminPage">
@@ -65,10 +63,9 @@
                 <li class="nav-item" id="navEngajamento" onclick="mudarAbaEducador('secEngajamento', 'navEngajamento')"><span class="material-symbols-outlined nav-icon">monitoring</span> <span class="nav-text">Engajamento</span></li>
                 <li class="nav-item" id="navGestaoLotes" onclick="mudarAbaEducador('secGestaoLotes', 'navGestaoLotes')"><span class="material-symbols-outlined nav-icon">inventory_2</span> <span class="nav-text">Gestão de Lotes</span></li>
                 
-                <li class="nav-item" onclick="abrirModal('modalCadastrarParceiro')"><span class="material-symbols-outlined nav-icon">storefront</span> <span class="nav-text" style="color:#4CAF50;">Cadastrar Parceiro</span></li>
-                <li class="nav-item" onclick="abrirModal('modalAtribuirLoteParceiro')"><span class="material-symbols-outlined nav-icon">add_business</span> <span class="nav-text" style="color:#4CAF50;">Lote para Parceiro</span></li>
+                <li class="nav-item" onclick="abrirModal('modalCadastrarParceiro')"><span class="material-symbols-outlined nav-icon">storefront</span> <span class="nav-text">Cadastrar Parceiro</span></li>
+                <li class="nav-item" onclick="abrirModal('modalAtribuirLoteParceiro')"><span class="material-symbols-outlined nav-icon">add_business</span> <span class="nav-text">Lote para Parceiro</span></li>
                 
-                <li class="nav-item" id="navParceiros" onclick="mudarAbaEducador('secParceiros', 'navParceiros')"><span class="material-symbols-outlined nav-icon">handshake</span> <span class="nav-text">Parceiros</span></li>
                 <li class="nav-item" id="navRankingAlunos" onclick="mudarAbaEducador('secRankingAlunos', 'navRankingAlunos')"><span class="material-symbols-outlined nav-icon">emoji_events</span> <span class="nav-text">Ranking Educandos</span></li>
                 <li class="nav-item" id="navRankingEducadores" onclick="mudarAbaEducador('secRankingEducadores', 'navRankingEducadores')"><span class="material-symbols-outlined nav-icon">school</span> <span class="nav-text">Ranking Educadores</span></li>
                 <li class="nav-item" id="navLivroCaixa" onclick="mudarAbaEducador('secLivroCaixa', 'navLivroCaixa')"><span class="material-symbols-outlined nav-icon">account_balance_wallet</span> <span class="nav-text">Livro Caixa</span></li>
@@ -92,36 +89,19 @@
                         <button class="btn-primary" onclick="abrirModal('modalTransferirLote')"><span class="material-symbols-outlined">sync_alt</span> Transferir Lotes</button>
                     </div>
                     
-                    <div class="dashboard-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-                        <div class="kpi-card">
-                            <div class="kpi-title">Vendas Educandos</div>
-                            <div class="kpi-value highlight-purple" id="kpiVendasEducandos">R$ 0,00</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-title">Vendas Equipe Direta</div>
-                            <div class="kpi-value highlight-purple" id="kpiVendasEquipe">R$ 0,00</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-title">Vendas Parceiros</div>
-                            <div class="kpi-value highlight-purple" id="kpiVendasParceiros">R$ 0,00</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-title">Caixa PIX</div>
-                            <div class="kpi-value highlight-purple" id="kpiCaixaPix">R$ 0,00</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-title">Caixa Dinheiro</div>
-                            <div class="kpi-value highlight-purple" id="kpiCaixaDinheiro">R$ 0,00</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-title">Arrecadação Global</div>
-                            <div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal">R$ 0,00</div>
-                        </div>
+                    <div class="dashboard-grid" style="margin-bottom: 1.5rem;">
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Vendas Educandos</div><div class="kpi-value highlight-purple" id="kpiVendasEducandos">R$ 0,00</div></div>
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Vendas Equipe Direta</div><div class="kpi-value highlight-purple" id="kpiVendasEquipe">R$ 0,00</div></div>
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Vendas Parceiros</div><div class="kpi-value highlight-purple" id="kpiVendasParceiros">R$ 0,00</div></div>
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Caixa PIX</div><div class="kpi-value highlight-purple" id="kpiCaixaPix">R$ 0,00</div></div>
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Caixa Dinheiro</div><div class="kpi-value highlight-purple" id="kpiCaixaDinheiro">R$ 0,00</div></div>
+                        <div class="kpi-card" style="border-left: none;"><div class="kpi-title">Arrecadação Global</div><div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal">R$ 0,00</div></div>
                     </div>
                     
                     <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 1.5rem;">
                         <div class="chart-wrapper"><h3 style="color: var(--dim-grey); text-align: center;">Panorama de Lotes</h3><div style="height: 250px;"><canvas id="estoqueChart"></canvas></div></div>
-                        <div class="chart-wrapper"><h3 style="color: var(--dim-grey); text-align: center;">Maior Estoque em Mãos</h3><div class="flex-center" style="height: 250px; flex-direction: column; text-align: center; justify-content: center;"><span class="material-symbols-outlined" style="font-size: 48px; color: var(--sunflower-gold);">inventory</span><h2 id="kpiMaiorEstoque" style="color: var(--petal-pink); margin-top: 10px;">Carregando...</h2></div></div>
+                        <div class="chart-wrapper"><h3 style="color: var(--dim-grey); text-align: center;">Maior Estoque em Mãos</h3><div class="flex-center" style="height: 250px; flex-direction: column; text-align: center;"><span class="material-symbols-outlined" style="font-size: 48px; color: var(--sunflower-gold);">inventory</span><h2 id="kpiMaiorEstoque" style="color: var(--petal-pink); margin-top: 10px;">Carregando...</h2></div></div>
+                        <div class="chart-wrapper"><h3 style="color: var(--dim-grey); text-align: center;">Financeiro</h3><div style="height: 250px;"><canvas id="financeiroChart"></canvas></div></div>
                     </div>
                 </section>
 
@@ -129,7 +109,7 @@
                 
                 <section id="secGestaoLotes" style="display: none;">
                     <h2 class="section-title">Validação de Lotes Pendentes</h2>
-                    <input type="text" id="buscaLotesInput" class="purple-input" placeholder="Pesquisar por nome de educando, equipe ou parceiro..." style="margin-bottom: 1rem;">
+                    <input type="text" id="buscaGestaoLotes" class="purple-input" placeholder="Pesquisar vendedor por nome..." style="margin-bottom: 1rem;">
                     <div class="table-container" style="overflow-x: auto;">
                         <table class="data-table" style="width: 100%;">
                             <thead><tr><th>Foto</th><th>Nome do Vendedor</th><th>Categoria / Turma</th><th class="text-center">Qtd. Pendente</th></tr></thead>
@@ -138,8 +118,6 @@
                     </div>
                     <div id="pagLotes"></div>
                 </section>
-                
-                <section id="secParceiros" style="display: none;"><h2 class="section-title">Gestão de Parceiros</h2><div class="dashboard-grid" style="margin-bottom: 2rem;"><div class="kpi-card"><div class="kpi-title">Arrecadado Parceiros</div><div class="kpi-value highlight-purple" id="kpiParceirosArrecadado">R$ 0,00</div></div><div class="kpi-card"><div class="kpi-title">Projetado Parceiros</div><div class="kpi-value highlight-yellow" id="kpiParceirosProjetado">R$ 0,00</div></div></div><div class="table-container"><table class="data-table" style="width: 100%;"><thead><tr><th>Parceiro</th><th class="text-center">Lotes</th><th class="text-center">Status</th><th class="text-center">Ação</th></tr></thead><tbody id="tabelaParceiros"></tbody></table></div></section>
                 
                 <section id="secRankingAlunos" style="display: none;">
                     <h2 class="section-title">Ranking Geral de Educandos</h2>
