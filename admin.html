@@ -42,7 +42,6 @@
         .img-container { width: 100%; max-height: 400px; display: flex; justify-content: center; background-color: #000; }
         .img-container img { max-width: 100%; max-height: 400px; display: block; }
         
-        /* Centralização da paginação */
         .discrete-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
         .btn-page-discrete { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--petal-pink); display: flex; align-items: center; transition: 0.2s; }
         .btn-page-discrete:hover:not(:disabled) { transform: scale(1.1); }
@@ -50,7 +49,6 @@
         .page-input-discrete { width: 40px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: var(--dim-grey); outline: none; }
         .page-input-discrete:focus { border-color: var(--petal-pink); }
         
-        /* Remoção das bordas esquerdas dos cards de KPI */
         .kpi-card { border-left: none !important; }
     </style>
 </head>
@@ -67,6 +65,8 @@
                 <li class="nav-item" id="navGestaoLotes" onclick="mudarAbaEducador('secGestaoLotes', 'navGestaoLotes')"><span class="material-symbols-outlined nav-icon">inventory_2</span> <span class="nav-text">Gestão de Lotes</span></li>
                 
                 <li class="nav-item" onclick="abrirModal('modalCadastrarColaborador')"><span class="material-symbols-outlined nav-icon">person_add</span> <span class="nav-text">Cadastrar Colaborador</span></li>
+                <li class="nav-item" onclick="abrirModal('modalAtribuirLoteEquipe')"><span class="material-symbols-outlined nav-icon">assignment_ind</span> <span class="nav-text">Lote para Equipe</span></li>
+                
                 <li class="nav-item" onclick="abrirModal('modalCadastrarParceiro')"><span class="material-symbols-outlined nav-icon">storefront</span> <span class="nav-text">Cadastrar Parceiro</span></li>
                 <li class="nav-item" onclick="abrirModal('modalAtribuirLoteParceiro')"><span class="material-symbols-outlined nav-icon">add_business</span> <span class="nav-text">Lote para Parceiro</span></li>
                 
@@ -256,6 +256,37 @@
                         <input type="file" id="inputFotoColaborador" accept="image/*" capture="environment" style="display: none;" onchange="window.iniciarCorteColaborador(event)">
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%; margin-top: 15px;">Salvar Colaborador</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalAtribuirLoteEquipe">
+        <div class="modal-box" style="width: 90%; max-width: 450px;">
+            <div class="modal-header">
+                <h2>Atribuir Lotes à Equipe</h2>
+                <button class="close-modal-btn" onclick="fecharModal('modalAtribuirLoteEquipe')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAtribuirLoteEquipe">
+                    <div class="form-group">
+                        <label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis (Filtro EQU)</label>
+                        <div class="checkbox-list-container" id="listaLotesEquipeCheckboxes" style="margin-bottom: 15px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Selecione o Colaborador</label>
+                        <div class="custom-select-wrapper" id="wrapperEquipeAtribuir">
+                            <div class="custom-select">
+                                <div class="custom-select-trigger">
+                                    <span class="trigger-text" style="color: var(--dim-grey);">Escolha o colaborador...</span>
+                                    <span class="material-symbols-outlined arrow-icon">expand_more</span>
+                                </div>
+                                <div class="custom-options" id="opcoesEquipeAtribuir"></div>
+                            </div>
+                            <input type="hidden" id="equipeAtribuirSelect" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Atribuição</button>
                 </form>
             </div>
         </div>
