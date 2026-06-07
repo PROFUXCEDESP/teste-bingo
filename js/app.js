@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
         minhaTurma: { current: 1, term: "", turma: "Todas" },
         rankEdu: { current: 1, term: "" },
         rankProfEdu: { current: 1 },
-        rankEquipe: { current: 1 }
+        rankEquipe: { current: 1 },
+        parceiros: { current: 1 }
     };
 
     let estoqueChartInstEdu = null; let financeiroChartInstEdu = null;
@@ -302,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 
                                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atualizar_foto', nomeAluno: pessoa.nome, fotoUrl: urlDaFoto }) });
                                 
-                                fecharModal('modalCorteFoto'); window.abrirModalSucesso("Foto updated!");
+                                fecharModal('modalCorteFoto'); window.abrirModalSucesso("Foto atualizada com sucesso!");
                             } else { window.abrirModalErro("Erro do Cloudinary."); }
                         }).catch(() => { window.abrirModalErro("Erro de rede."); })
                         .finally(() => { btnConfirmarCorte.innerText = "Cortar e Salvar Foto"; btnConfirmarCorte.disabled = false; window.modoEdicaoFoto = false; });
@@ -327,6 +328,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // ==========================================
+    // RENDERIZADORES DA ADMINISTRAÇÃO E COMUNS
+    // ==========================================
 
     window.renderRankingAlunosAdm = function() {
         const tabela = document.getElementById("tabelaRankingAlunosADM"); if(!tabela) return;
@@ -390,6 +395,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join('') || '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum colaborador registrado.</td></tr>';
         
         renderPaginationUI('pagRankingEquipe', 'rankEquipe', filtrados.length, 10, 'renderRankingEquipeAdm');
+    }
+
+    window.renderParceirosListaPaginado = function() {
+        const tabela = document.getElementById("tabelaParceirosLista"); if(!tabela) return;
+        let filtrados = [...window.todosParceirosBD];
+        
+        const startIdx = (window.pages.parceiros.current - 1) * 10;
+        const paginated = filtrados.slice(startIdx, startIdx + 10);
+
+        tabela.innerHTML = paginated.map((parc, index) => {
+            const valorArrecadado = (parc.lotesVendidos.length * 20).toFixed(2).replace('.', ',');
+            return `<tr style="cursor: pointer;" onclick="abrirDetalhesAluno(${window.todosParceirosBD.indexOf(parc)}, 'Parceiro')">
+                <td><img src="${parc.foto}" class="table-avatar" style="border: 2px solid #4CAF50;"></td>
+                <td><strong>${parc.nome}</strong><br><small style="color:#4CAF50; font-weight:bold;">Comércio Parceiro</small></td>
+                <td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${parc.lotesVendidos.length}</td>
+                <td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum parceiro registrado.</td></tr>';
+        
+        renderPaginationUI('pagParceiros', 'parceiros', filtrados.length, 10, 'renderParceirosListaPaginado');
     }
 
     window.renderGestaoLotesPaginado = function() {
@@ -512,10 +537,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const vVendasPix = window.caixaGlobal.pixReais; const vVendasDin = window.caixaGlobal.dinReais;
             const vVendas = vVendasPix + vVendasDin; const vPendentes = totalPendentesGeral * 20.00;
             
-            if(document.getElementById('kpiVendasReaisGlobal')) document.getElementById('kpiVendasReaisGlobal').innerText = `R$ ${vVendas.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiCaixaPix')) document.getElementById('kpiCaixaPix').innerText = `R$ ${vVendasPix.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiCaixaDinheiro')) document.getElementById('kpiCaixaDinheiro').innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiProjecaoGlobal')) document.getElementById('kpiProjecaoGlobal').innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
+            const kpiGlobal = document.getElementById('kpiVendasReaisGlobal');
+            const kpiPix = document.getElementById('kpiCaixaPix');
+            const kpiDin = document.getElementById('kpiCaixaDinheiro');
+            const kpiProj = document.getElementById('kpiProjecaoGlobal');
+
+            if(kpiGlobal) kpiGlobal.innerText = `R$ ${vVendas.toFixed(2).replace('.', ',')}`;
+            if(kpiPix) kpiPix.innerText = `R$ ${vVendasPix.toFixed(2).replace('.', ',')}`;
+            if(kpiDin) kpiDin.innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
+            if(kpiProj) kpiProj.innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
             
             const ctxEstEdu = document.getElementById('estoqueChartEdu');
             if (ctxEstEdu && ctxEstEdu.offsetParent !== null) { 
@@ -668,12 +698,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const kpiCaixaDinheiro = document.getElementById('kpiCaixaDinheiro');
             const kpiVendasReaisGlobal = document.getElementById('kpiVendasReaisGlobal');
             const kpiProjecaoGlobal = document.getElementById('kpiProjecaoGlobal');
+            const kpiParceirosArrecadado = document.getElementById('kpiParceirosArrecadado');
+            const kpiParceirosProjetado = document.getElementById('kpiParceirosProjetado');
 
             let totalPendentes = 0, totalVendidos = 0; let ativos = 0; let inativos = 0; 
             let alunosNormais = window.todosEducandosBD.filter(a => a.turma !== 'Equipe');
             let totalAlunos = alunosNormais.length;
 
-            window.todosEducandosBD.forEach(a => { 
+            alunosNormais.forEach(a => { 
                 totalPendentes += a.lotesPendentes.length; totalVendidos += a.lotesVendidos.length; 
                 if(a.turma !== 'Equipe') {
                     if(a.cadastroAtivo === 'Sim' || a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0) ativos++; else inativos++;
@@ -692,6 +724,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const vVendasPix = window.caixaGlobal.pixReais; const vVendasDin = window.caixaGlobal.dinReais;
             const vVendas = vVendasPix + vVendasDin; const vPendentes = totalPendentes * 20.00;
 
+            let pendentesParceiros = 0;
+            window.todosParceirosBD.forEach(p => { pendentesParceiros += p.lotesPendentes.length; });
+
             if(kpiVendasEducandos) kpiVendasEducandos.innerText = `R$ ${vEdu.toFixed(2).replace('.', ',')}`;
             if(kpiVendasEquipe) kpiVendasEquipe.innerText = `R$ ${vEquipe.toFixed(2).replace('.', ',')}`;
             if(kpiVendasParceiros) kpiVendasParceiros.innerText = `R$ ${vParc.toFixed(2).replace('.', ',')}`;
@@ -700,6 +735,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if(kpiCaixaDinheiro) kpiCaixaDinheiro.innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
             if(kpiProjecaoGlobal) kpiProjecaoGlobal.innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
             
+            if(kpiParceirosArrecadado) kpiParceirosArrecadado.innerText = `R$ ${vParc.toFixed(2).replace('.', ',')}`;
+            if(kpiParceirosProjetado) kpiParceirosProjetado.innerText = `R$ ${(pendentesParceiros * 20).toFixed(2).replace('.', ',')}`;
+
             if(document.getElementById('kpiAtivos')) document.getElementById('kpiAtivos').innerText = ativos;
             if(document.getElementById('kpiInativos')) document.getElementById('kpiInativos').innerText = inativos;
             if(document.getElementById('kpiAdesao')) document.getElementById('kpiAdesao').innerText = totalAlunos > 0 ? `${Math.round((ativos/totalAlunos)*100)}%` : '0%';
@@ -723,10 +761,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             window.renderRankingAlunosAdm();
+            window.renderRankingEquipeAdm();
+            window.renderParceirosListaPaginado();
             window.renderGestaoLotesPaginado();
             window.renderLogsPaginado();
             window.renderLivroCaixaPaginado();
-            window.renderRankingEquipeAdm();
 
             const tabelaRankingEducadoresADM = document.getElementById('tabelaRankingEducadoresADM');
             if(tabelaRankingEducadoresADM) {
@@ -735,6 +774,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let nomeLimpo = e.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
                     return !nomesExcluidos.includes(nomeLimpo);
                 }).sort((a, b) => b.lotesVendidos - a.lotesVendidos);
+
                 const startIdx = (window.pages.rankProfAdm.current - 1) * 10;
                 const paginated = rankingProf.slice(startIdx, startIdx + 10);
 
@@ -962,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // MODAIS E TRANSAÇÕES GLOBAIS
+    // MODAIS E DISPARO DE TRANSAÇÕES UNIFICADAS
     // ==========================================
     window.abrirModal = function(id) { document.getElementById(id).classList.add('active'); }
     window.fecharModal = function(id) { document.getElementById(id).classList.remove('active'); }
