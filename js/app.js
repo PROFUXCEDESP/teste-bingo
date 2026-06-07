@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
-    
     const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dliu0ck6y/image/upload'; 
     const CLOUDINARY_PRESET = 'bingo_2026';
     
@@ -191,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         let valor = parseFloat(transacao['Valor']) || parseFloat(transacao['Valor_Total']) || 0;
                         let m = String(transacao['Metodo_Pagamento'] || transacao['Método'] || transacao['Metodo'] || transacao['Forma_Pagamento'] || '').toUpperCase();
                         if(m.includes('PIX')) window.caixaGlobal.pixReais += valor;
-                        if(m.includes('DINHEIRO') || m.includes('ESPECIE') || m.includes('MISTO')) window.caixaGlobal.dinReais += valor; // simplificação
+                        if(m.includes('DINHEIRO') || m.includes('ESPECIE') || m.includes('MISTO')) window.caixaGlobal.dinReais += valor;
                     });
                 }
                 
@@ -303,9 +302,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 
                                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atualizar_foto', nomeAluno: pessoa.nome, fotoUrl: urlDaFoto }) });
                                 
-                                fecharModal('modalCorteFoto'); window.abrirModalSucesso("Foto atualizada com sucesso!");
+                                fecharModal('modalCorteFoto'); window.abrirModalSucesso("Foto updated!");
                             } else { window.abrirModalErro("Erro do Cloudinary."); }
-                        }).catch(err => { window.abrirModalErro("Erro de rede."); })
+                        }).catch(() => { window.abrirModalErro("Erro de rede."); })
                         .finally(() => { btnConfirmarCorte.innerText = "Cortar e Salvar Foto"; btnConfirmarCorte.disabled = false; window.modoEdicaoFoto = false; });
                     }, 'image/jpeg');
                 } else {
@@ -328,10 +327,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    // ==========================================
-    // RENDERIZADORES DA ADMINISTRAÇÃO
-    // ==========================================
 
     window.renderRankingAlunosAdm = function() {
         const tabela = document.getElementById("tabelaRankingAlunosADM"); if(!tabela) return;
@@ -453,12 +448,33 @@ document.addEventListener("DOMContentLoaded", () => {
             const id = tx['ID_Transacao'] || tx['ID'] || '-';
             const lote = tx['Lote'] || tx['Codigo_Lote'] || '-';
             const edu = tx['Educando'] || tx['Aluno'] || '-';
-            const val = parseFloat(tx['Valor'] || tx['Valor_Total'] || 0).toFixed(2).replace('.', ',');
-            const met = tx['Metodo_Pagamento'] || tx['Método'] || tx['Metodo'] || tx['Forma_Pagamento'] || '-';
+            const val = parseFloat(tx['Valor'] || 0).toFixed(2).replace('.', ',');
+            const met = tx['Metodo_Pagamento'] || tx['Método'] || tx['Metodo'] || '-';
             const resp = tx['Responsavel'] || tx['Educador Responsável'] || '-';
             return `<tr><td>${dt}</td><td><span style="color:#a0a0a0; font-size:0.8rem;">${id}</span></td><td><strong>${lote}</strong></td><td>${edu}</td><td class="highlight-purple" style="font-weight:bold;">R$ ${val}</td><td>${met}</td><td>${resp}</td></tr>`;
         }).join('') || `<tr><td colspan="7" class="text-center" style="padding: 2rem; color: #a0a0a0;">Nenhuma transação.</td></tr>`;
         renderPaginationUI('pagLivroCaixa', 'caixa', filtrados.length, 10, 'renderLivroCaixaPaginado');
+    }
+
+    window.renderMinhaTurmaPaginado = function() {
+        const tabela = document.getElementById('tabelaAlunos'); if(!tabela) return;
+        let filtrados = window.todosEducandosBD.filter(a => textoIgual(a.educadorResponsavel, userName) && (a.cadastroAtivo.toLowerCase() === 'sim' || a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0)); 
+        
+        if(window.pages.minhaTurma.term) filtrados = filtrados.filter(a => a.nome.toLowerCase().includes(window.pages.minhaTurma.term.toLowerCase()));
+        if(window.pages.minhaTurma.turma !== "Todas") filtrados = filtrados.filter(a => a.turma === window.pages.minhaTurma.turma);
+
+        const startIdx = (window.pages.minhaTurma.current - 1) * 10;
+        const paginated = filtrados.slice(startIdx, startIdx + 10);
+
+        tabela.innerHTML = paginated.map((aluno, index) => {
+            const posReal = startIdx + index + 1;
+            const rec = calcularRecompensas(aluno.lotesVendidos.length);
+            const cartelasHTML = rec.cartelas > 0 ? `<div class="flex-center" style="font-weight:bold; color:var(--sunflower-gold);">${rec.cartelas}</div>` : '-';
+            const foneHTML = rec.fone > 0 ? '<span class="material-symbols-outlined" style="color:var(--petal-pink);">headphones</span>' : '-';
+            return `<tr onclick="abrirDetalhesAluno(${window.todosEducandosBD.indexOf(aluno)}, 'Educando')"><td class="td-center" style="font-weight: bold; color: #BC68A1;">${posReal}</td><td><img src="${aluno.foto}" class="table-avatar"></td><td><strong>${aluno.nome}</strong><br><small style="color:#a0a0a0">${aluno.curso}</small></td><td class="td-center">${aluno.lotesVendidos.length + aluno.lotesPendentes.length}</td><td class="td-center highlight-purple" style="font-weight:bold;">${aluno.lotesVendidos.length}</td><td class="td-center ${aluno.lotesPendentes.length > 0 ? 'td-highlight' : ''}">${aluno.lotesPendentes.length}</td><td class="td-center">${cartelasHTML}</td><td class="td-center">${foneHTML}</td></tr>`;
+        }).join('') || '<tr><td colspan="8" class="text-center" style="padding: 20px; color: #a0a0a0;">Nenhum aluno encontrado.</td></tr>';
+        
+        renderPaginationUI('pagMinhaTurma', 'minhaTurma', filtrados.length, 10, 'renderMinhaTurmaPaginado');
     }
 
     const srchRankA = document.getElementById("buscaRankingAluno");
@@ -468,48 +484,222 @@ document.addEventListener("DOMContentLoaded", () => {
     if(srchLotes) srchLotes.addEventListener('input', (e) => { window.pages.gestaoLotes.term = e.target.value; window.pages.gestaoLotes.current = 1; window.renderGestaoLotesPaginado(); });
 
     // ==========================================
-    // SEÇÃO DO ADMINISTRADOR
+    // SEÇÃO DO EDUCADOR (BLINDADA CONTRA CRASHES)
+    // ==========================================
+    const educadorPage = document.getElementById("educadorPage");
+    if (educadorPage) {
+        document.getElementById('nomeEducador').innerText = userName;
+
+        const buscaNome = document.getElementById('buscaNomeAluno');
+        const filtroTurma = document.getElementById('filtroTurmaAluno');
+        if(buscaNome) buscaNome.addEventListener('input', (e) => { window.pages.minhaTurma.term = e.target.value; window.pages.minhaTurma.current = 1; window.atualizarDashboardEducador() });
+        if(filtroTurma) filtroTurma.addEventListener('change', (e) => { window.pages.minhaTurma.turma = e.target.value; window.pages.minhaTurma.current = 1; window.atualizarDashboardEducador() });
+
+        window.atualizarDashboardEducador = function() {
+            window.renderMinhaTurmaPaginado();
+
+            let totalPendentesGeral = 0, totalVendidosGeral = 0;
+            window.todosEducandosBD.forEach(a => { totalPendentesGeral += a.lotesPendentes.length; totalVendidosGeral += a.lotesVendidos.length; });
+
+            const meuPerfil = window.mockEducadoresBD.find(e => textoIgual(e.nome, userName));
+            if(meuPerfil) {
+                const disponivel = meuPerfil.lotesRetiradosSede - (meuPerfil.lotesVendidos + meuPerfil.lotesPendentes);
+                if(document.getElementById('kpiEducadorVendidos')) document.getElementById('kpiEducadorVendidos').innerText = meuPerfil.lotesVendidos;
+                if(document.getElementById('kpiEducadorPendentes')) document.getElementById('kpiEducadorPendentes').innerText = meuPerfil.lotesPendentes;
+                if(document.getElementById('kpiEducadorEstoque')) document.getElementById('kpiEducadorEstoque').innerText = disponivel >= 0 ? disponivel : 0;
+            }
+
+            const vVendasPix = window.caixaGlobal.pixReais; const vVendasDin = window.caixaGlobal.dinReais;
+            const vVendas = vVendasPix + vVendasDin; const vPendentes = totalPendentesGeral * 20.00;
+            
+            if(document.getElementById('kpiVendasReaisGlobal')) document.getElementById('kpiVendasReaisGlobal').innerText = `R$ ${vVendas.toFixed(2).replace('.', ',')}`;
+            if(document.getElementById('kpiCaixaPix')) document.getElementById('kpiCaixaPix').innerText = `R$ ${vVendasPix.toFixed(2).replace('.', ',')}`;
+            if(document.getElementById('kpiCaixaDinheiro')) document.getElementById('kpiCaixaDinheiro').innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
+            if(document.getElementById('kpiProjecaoGlobal')) document.getElementById('kpiProjecaoGlobal').innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
+            
+            const ctxEstEdu = document.getElementById('estoqueChartEdu');
+            if (ctxEstEdu && ctxEstEdu.offsetParent !== null) { 
+                if (!estoqueChartInstEdu) estoqueChartInstEdu = new Chart(ctxEstEdu.getContext('2d'), { type: 'doughnut', data: { labels: ['Válidos', 'Pendentes', 'Estoque'], datasets: [{ data: [totalVendidosGeral, totalPendentesGeral, 440], backgroundColor: ['#BC68A1', '#F4B841', '#e0e0e0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false } });
+                else { estoqueChartInstEdu.data.datasets[0].data = [totalVendidosGeral, totalPendentesGeral, 440]; estoqueChartInstEdu.update(); }
+            }
+            const ctxFinEdu = document.getElementById('financeiroChartEdu');
+            if (ctxFinEdu && ctxFinEdu.offsetParent !== null) {
+                if (!financeiroChartInstEdu) financeiroChartInstEdu = new Chart(ctxFinEdu.getContext('2d'), { type: 'bar', data: { labels: ['Caixa Realizado', 'Projeção Restante'], datasets: [{ label: 'Valor em R$', data: [vVendas, vPendentes], backgroundColor: ['#BC68A1', '#F4B841'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+                else { financeiroChartInstEdu.data.datasets[0].data = [vVendas, vPendentes]; financeiroChartInstEdu.update(); }
+            }
+
+            window.renderRankingAlunosEdu();
+
+            const tabelaRankingEducadores = document.getElementById('tabelaRankingEducadoresLista');
+            if(tabelaRankingEducadores) {
+                let rankingProf = [...window.mockEducadoresBD].sort((a, b) => b.lotesVendidos - a.lotesVendidos);
+                const startIdx = (window.pages.rankProfEdu.current - 1) * 10;
+                const paginated = rankingProf.slice(startIdx, startIdx + 10);
+
+                tabelaRankingEducadores.innerHTML = paginated.map((prof, index) => {
+                    const destaque = textoIgual(prof.nome, userName) ? 'background-color: rgba(188, 104, 161, 0.05);' : '';
+                    const valorArrecadado = (prof.lotesVendidos * 20).toFixed(2).replace('.', ',');
+                    return `<tr style="${destaque}"><td class="td-center" style="font-weight: bold; color: var(--petal-pink);">${startIdx + index + 1}º</td><td><strong>${prof.nome}</strong></td><td style="color: var(--dim-grey);">${prof.curso}</td><td class="td-center" style="font-weight: bold; font-size: 1.1rem;">${prof.lotesVendidos}</td><td class="td-center highlight-purple" style="font-weight: bold;">R$ ${valorArrecadado}</td></tr>`;
+                }).join('');
+                renderPaginationUI('pagRankingEducadoresLista', 'rankProfEdu', rankingProf.length, 10, 'atualizarDashboardEducador');
+            }
+
+            let searchBox = `<div style="padding: 10px; position: sticky; top: 0; background: white; border-bottom: 1px solid #eee; z-index: 2;"><input type="text" class="purple-input search-custom-select" placeholder="Pesquisar nome..." style="padding: 0.5rem; font-size: 0.9rem;" onclick="event.stopPropagation()"></div>`;
+            const todosMeusAlunosDB = window.todosEducandosBD.filter(a => textoIgual(a.educadorResponsavel, userName));
+            
+            const selectNomeCadastro = document.getElementById("opcoesNomeEducando");
+            const wrapCad = document.getElementById("wrapperNomeEducando");
+            if(selectNomeCadastro && wrapCad) {
+                let optsCad = searchBox;
+                if (todosMeusAlunosDB.length === 0) { optsCad += '<span class="custom-option" data-value="">Nenhum aluno no banco.</span>'; } 
+                else {
+                    todosMeusAlunosDB.forEach(a => { 
+                        let lblFoto = a.foto.includes('ui-avatars') ? '<span style="color:#a0a0a0; font-size: 0.8rem;">(Sem Foto)</span>' : '<span style="color:var(--petal-pink); font-size: 0.8rem;">(Com Foto)</span>';
+                        optsCad += `<span class="custom-option" data-value="${a.nome}">${a.nome} - ${lblFoto}</span>`; 
+                    });
+                }
+                selectNomeCadastro.innerHTML = optsCad;
+                ativarEventosSelectCustomizado(wrapCad);
+            }
+
+            const selectAlunoAtribuir = document.getElementById("opcoesAlunoAtribuir");
+            const wrapAttr = document.getElementById("wrapperAlunoAtribuir");
+            if (selectAlunoAtribuir && wrapAttr) {
+                let optsAttr = searchBox;
+                let alunosAtivosLocal = todosMeusAlunosDB.filter(a => a.cadastroAtivo.toLowerCase() === 'sim' || a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0);
+                if(alunosAtivosLocal.length === 0) optsAttr += '<span class="custom-option" data-value="">Nenhum aluno ativo.</span>';
+                else alunosAtivosLocal.forEach(a => { optsAttr += `<span class="custom-option" data-value="${a.nome}">${a.nome}</span>`; });
+                selectAlunoAtribuir.innerHTML = optsAttr;
+                ativarEventosSelectCustomizado(wrapAttr);
+            }
+
+            const listaLotes = document.getElementById("listaLotesCheckboxes");
+            if(listaLotes) {
+                let htmlLotes = '';
+                let lotesEmUso = [];
+                window.todosEducandosBD.forEach(a => { lotesEmUso.push(...a.lotesPendentes); lotesEmUso.push(...a.lotesVendidos); });
+                const meusLotes = window.lotesSedeBD.filter(l => textoIgual(l.educador, userName) || l.educador === '');
+                
+                meusLotes.forEach(l => { 
+                    if(lotesEmUso.includes(l.codigo)) {
+                        htmlLotes += `<label class="checkbox-item-row" style="opacity: 0.5; cursor: not-allowed;"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}" disabled> <span style="color: var(--dim-grey); font-weight: 500; text-decoration: line-through;">${l.codigo}</span> <span style="margin-left:auto; font-size: 0.8rem; color:#a0a0a0;">Em uso</span></label>`; 
+                    } else {
+                        htmlLotes += `<label class="checkbox-item-row"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}"> <span style="color: var(--dim-grey); font-weight: 500;">${l.codigo}</span></label>`; 
+                    }
+                });
+                listaLotes.innerHTML = htmlLotes || '<div style="padding: 15px; color:#a0a0a0; text-align:center;">Nenhum lote liberado para você na Sede.</div>';
+            }
+        };
+
+        const formCadastrarEducando = document.getElementById("formCadastrarEducando");
+        if(formCadastrarEducando) {
+            formCadastrarEducando.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const btn = formCadastrarEducando.querySelector("button[type='submit']");
+                btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
+
+                const nome = document.getElementById("nomeSelectEducando").value;
+                const turmaTexto = document.getElementById("turmaSelectEducando").value; 
+                if(!nome || !turmaTexto) { btn.disabled = false; btn.innerText = "Ativar Educando"; return window.abrirModalErro("Preencha todos os campos."); }
+                let periodo = (turmaTexto === "Turma 3" || turmaTexto === "Turma 4") ? "Tarde" : "Manhã";
+
+                if(window.fotoFileGlobal && window.tipoCadastroFoto === 'aluno') {
+                    const formData = new FormData(); 
+                    formData.append('file', window.fotoFileGlobal); 
+                    formData.append('upload_preset', CLOUDINARY_PRESET);
+                    
+                    fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+                    .then(r => r.json()).then(dataImg => {
+                        if(dataImg.secure_url) { salvarEducandoBanco(nome, turmaTexto, periodo, dataImg.secure_url, btn); } 
+                        else { window.abrirModalErro("Falha no Cloudinary"); btn.innerText = "Ativar Educando"; btn.disabled = false; }
+                    }).catch(() => { window.abrirModalErro("Erro de rede."); btn.innerText = "Ativar Educando"; btn.disabled = false; });
+                } else { salvarEducandoBanco(nome, turmaTexto, periodo, "", btn); }
+            });
+        }
+
+        function salvarEducandoBanco(nome, turmaTexto, periodo, fotoUrl, btn) {
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_educando', nome: nome, turma: turmaTexto, periodo: periodo, educadorResponsavel: userName, fotoUrl: fotoUrl })
+            }).then(res => res.json()).then(data => {
+                btn.innerText = "Ativar Educando"; btn.disabled = false;
+                if(data.success) {
+                    window.registrarLog("Cadastro", `Ativou e vinculou foto ao aluno ${nome}`);
+                    fecharModal('modalCadastrarEducando'); formCadastrarEducando.reset();
+                    window.fotoFileGlobal = null; document.getElementById('previewFoto').style.display = 'none'; document.getElementById('iconCamera').style.display = 'block';
+                    window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
+                } else { window.abrirModalErro(data.message); }
+            }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+        }
+
+        const formAtribuirLote = document.getElementById("formAtribuirLote");
+        if(formAtribuirLote) {
+            formAtribuirLote.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const alunoInput = document.getElementById("alunoAtribuirSelect").value;
+                const checkboxesMarcados = document.querySelectorAll('#listaLotesCheckboxes input[type="checkbox"]:checked');
+                const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
+
+                if(!alunoInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o aluno e marque pelo menos um lote.");
+                const btn = formAtribuirLote.querySelector("button[type='submit']");
+                btn.innerText = "Atribuindo..."; btn.disabled = true;
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote', nomeAluno: alunoInput, lotes: lotesArray }) })
+                .then(res => res.json()).then(data => {
+                    btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
+                    if(data.success) {
+                        window.registrarLog("Atribuição de Lote", `Atribuiu os lotes ${lotesArray.join(', ')} para ${alunoInput}`);
+                        fecharModal('modalAtribuirLote'); formAtribuirLote.reset(); window.abrirModalSucesso("Lotes atribuídos!"); window.carregarDadosDoBanco(); 
+                    } else { window.abrirModalErro(data.message); }
+                }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+            });
+        }
+    }
+
+    // ==========================================
+    // SEÇÃO DO ADMINISTRADOR (BLINDADA CONTRA CRASHES)
     // ==========================================
     const adminPage = document.getElementById("adminPage");
     if (adminPage) {
         
         window.atualizarDashboardsADM = function() {
+            const kpiVendasEducandos = document.getElementById('kpiVendasEducandos');
+            const kpiVendasEquipe = document.getElementById('kpiVendasEquipe');
+            const kpiVendasParceiros = document.getElementById('kpiVendasParceiros');
+            const kpiCaixaPix = document.getElementById('kpiCaixaPix');
+            const kpiCaixaDinheiro = document.getElementById('kpiCaixaDinheiro');
+            const kpiVendasReaisGlobal = document.getElementById('kpiVendasReaisGlobal');
+            const kpiProjecaoGlobal = document.getElementById('kpiProjecaoGlobal');
+
             let totalPendentes = 0, totalVendidos = 0; let ativos = 0; let inativos = 0; 
             let alunosNormais = window.todosEducandosBD.filter(a => a.turma !== 'Equipe');
             let totalAlunos = alunosNormais.length;
 
-            alunosNormais.forEach(a => { 
+            window.todosEducandosBD.forEach(a => { 
                 totalPendentes += a.lotesPendentes.length; totalVendidos += a.lotesVendidos.length; 
-                if(a.cadastroAtivo === 'Sim' || a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0) ativos++; else inativos++;
+                if(a.turma !== 'Equipe') {
+                    if(a.cadastroAtivo === 'Sim' || a.lotesVendidos.length > 0 || a.lotesPendentes.length > 0) ativos++; else inativos++;
+                }
             });
 
-            // Separação de faturamentos de Caixa
             let vEdu = 0, vEquipe = 0, vParc = 0;
-            let vPix = 0, vDin = 0;
-
             window.caixaGlobalBD.forEach(tx => {
                 let val = parseFloat(tx['Valor']) || parseFloat(tx['Valor_Total']) || 0;
                 let cat = tx['Categoria'] || 'Educando';
-                let m = String(tx['Metodo_Pagamento'] || tx['Método'] || tx['Metodo'] || tx['Forma_Pagamento'] || '').toUpperCase();
-
                 if(cat === 'Equipe') vEquipe += val;
                 else if(cat === 'Parceiro') vParc += val;
                 else vEdu += val;
-
-                if(m.includes('PIX')) vPix += val;
-                else if(m.includes('DINHEIRO') || m.includes('ESPECIE') || m.includes('MISTO')) vDin += val;
             });
 
-            const vVendas = vPix + vDin; const vPendentes = totalPendentes * 20.00;
+            const vVendasPix = window.caixaGlobal.pixReais; const vVendasDin = window.caixaGlobal.dinReais;
+            const vVendas = vVendasPix + vVendasDin; const vPendentes = totalPendentes * 20.00;
 
-            if(document.getElementById('kpiVendasEducandos')) document.getElementById('kpiVendasEducandos').innerText = `R$ ${vEdu.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiVendasEquipe')) document.getElementById('kpiVendasEquipe').innerText = `R$ ${vEquipe.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiVendasParceiros')) document.getElementById('kpiVendasParceiros').innerText = `R$ ${vParc.toFixed(2).replace('.', ',')}`;
+            if(kpiVendasEducandos) kpiVendasEducandos.innerText = `R$ ${vEdu.toFixed(2).replace('.', ',')}`;
+            if(kpiVendasEquipe) kpiVendasEquipe.innerText = `R$ ${vEquipe.toFixed(2).replace('.', ',')}`;
+            if(kpiVendasParceiros) kpiVendasParceiros.innerText = `R$ ${vParc.toFixed(2).replace('.', ',')}`;
+            if(kpiVendasReaisGlobal) kpiVendasReaisGlobal.innerText = `R$ ${vVendas.toFixed(2).replace('.', ',')}`;
+            if(kpiCaixaPix) kpiCaixaPix.innerText = `R$ ${vVendasPix.toFixed(2).replace('.', ',')}`;
+            if(kpiCaixaDinheiro) kpiCaixaDinheiro.innerText = `R$ ${vVendasDin.toFixed(2).replace('.', ',')}`;
+            if(kpiProjecaoGlobal) kpiProjecaoGlobal.innerText = `R$ ${vPendentes.toFixed(2).replace('.', ',')}`;
             
-            if(document.getElementById('kpiVendasReaisGlobal')) document.getElementById('kpiVendasReaisGlobal').innerText = `R$ ${vVendas.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiCaixaPix')) document.getElementById('kpiCaixaPix').innerText = `R$ ${vPix.toFixed(2).replace('.', ',')}`;
-            if(document.getElementById('kpiCaixaDinheiro')) document.getElementById('kpiCaixaDinheiro').innerText = `R$ ${vDin.toFixed(2).replace('.', ',')}`;
-
             if(document.getElementById('kpiAtivos')) document.getElementById('kpiAtivos').innerText = ativos;
             if(document.getElementById('kpiInativos')) document.getElementById('kpiInativos').innerText = inativos;
             if(document.getElementById('kpiAdesao')) document.getElementById('kpiAdesao').innerText = totalAlunos > 0 ? `${Math.round((ativos/totalAlunos)*100)}%` : '0%';
@@ -533,10 +723,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             window.renderRankingAlunosAdm();
-            window.renderRankingEquipeAdm();
             window.renderGestaoLotesPaginado();
             window.renderLogsPaginado();
             window.renderLivroCaixaPaginado();
+            window.renderRankingEquipeAdm();
 
             const tabelaRankingEducadoresADM = document.getElementById('tabelaRankingEducadoresADM');
             if(tabelaRankingEducadoresADM) {
@@ -545,7 +735,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     let nomeLimpo = e.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
                     return !nomesExcluidos.includes(nomeLimpo);
                 }).sort((a, b) => b.lotesVendidos - a.lotesVendidos);
-
                 const startIdx = (window.pages.rankProfAdm.current - 1) * 10;
                 const paginated = rankingProf.slice(startIdx, startIdx + 10);
 
@@ -557,8 +746,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             let searchBox = `<div style="padding: 10px; position: sticky; top: 0; background: white; border-bottom: 1px solid #eee; z-index: 2;"><input type="text" class="purple-input search-custom-select" placeholder="Pesquisar..." style="padding: 0.5rem; font-size: 0.9rem;" onclick="event.stopPropagation()"></div>`;
-            
-            // População Lotes Sede (Transferência)
             const listaSede = document.getElementById("listaLotesSede");
             if(listaSede) {
                 let htmlSede = '';
@@ -577,23 +764,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 listaSede.innerHTML = htmlSede || '<div style="padding: 15px; color:#a0a0a0; text-align:center;">Nenhum lote na base.</div>';
             }
 
-            const opcoesEducador = document.getElementById("opcoesEducadorDestino");
-            const wrapEdu = document.getElementById("wrapperEducadorDestino");
-            if(opcoesEducador && wrapEdu) {
-                let optsEdu = searchBox;
-                optsEdu += '<span class="custom-option" data-value="Sede">Devolver para Sede</span>';
-                window.mockEducadoresBD.forEach(e => { optsEdu += `<span class="custom-option" data-value="${e.nome}">${e.nome}</span>`; });
-                opcoesEducador.innerHTML = optsEdu;
-                ativarEventosSelectCustomizado(wrapEdu);
-            }
-
-            // População para Parceiros (Filtro PARC)
             const listaLotesParceiros = document.getElementById("listaLotesParceirosCheckboxes");
             if(listaLotesParceiros) {
                 let htmlLotes = '';
                 let lotesEmUso = [];
                 window.todosParceirosBD.forEach(p => { lotesEmUso.push(...p.lotesPendentes); lotesEmUso.push(...p.lotesVendidos); });
-                window.todosEducandosBD.forEach(a => { lotesEmUso.push(...a.lotesPendentes); lotesEmUso.push(...a.lotesVendidos); }); // Garantia cruzada
+                window.todosEducandosBD.forEach(a => { lotesEmUso.push(...a.lotesPendentes); lotesEmUso.push(...a.lotesVendidos); });
                 const lotesFiltrados = window.lotesSedeBD.filter(l => l.codigo.toUpperCase().includes('PARC'));
                 lotesFiltrados.forEach(l => {
                     if(lotesEmUso.includes(l.codigo)) {
@@ -602,20 +778,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         htmlLotes += `<label class="checkbox-item-row"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}"> <span>${l.codigo}</span></label>`;
                     }
                 });
-                listaLotesParceiros.innerHTML = htmlLotes || '<div style="padding:15px; text-align:center; color:#a0a0a0;">Nenhum lote PARC livre na Sede.</div>';
+                listaLotesParceiros.innerHTML = htmlLotes || '<div style="padding:15px; text-align:center; color:#a0a0a0;">Nenhum lote PARC vago.</div>';
             }
 
             const selectParceiroAttr = document.getElementById("opcoesParceiroAtribuir");
             const wrapParcAttr = document.getElementById("wrapperParceiroAtribuir");
             if(selectParceiroAttr && wrapParcAttr) {
                 let opts = searchBox;
-                if(window.todosParceirosBD.length === 0) opts += '<span class="custom-option" data-value="">Nenhum parceiro cadastrado.</span>';
+                if(window.todosParceirosBD.length === 0) opts += '<span class="custom-option" data-value="">Nenhum parceiro.</span>';
                 else window.todosParceirosBD.forEach(p => { opts += `<span class="custom-option" data-value="${p.nome}">${p.nome}</span>`; });
                 selectParceiroAttr.innerHTML = opts;
                 ativarEventosSelectCustomizado(wrapParcAttr);
             }
 
-            // População para Equipe / Vendas Diretas (Filtro EQU)
             const listaLotesEquipe = document.getElementById("listaLotesEquipeCheckboxes");
             if(listaLotesEquipe) {
                 let htmlLotesEquipe = '';
@@ -631,7 +806,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         htmlLotesEquipe += `<label class="checkbox-item-row"><input type="checkbox" class="roxo-checkbox" value="${l.codigo}"> <span>${l.codigo}</span></label>`;
                     }
                 });
-                listaLotesEquipe.innerHTML = htmlLotesEquipe || '<div style="padding:15px; text-align:center; color:#a0a0a0;">Nenhum lote EQU vago na Sede.</div>';
+                listaLotesEquipe.innerHTML = htmlLotesEquipe || '<div style="padding:15px; text-align:center; color:#a0a0a0;">Nenhum lote EQU vago.</div>';
             }
 
             const selectEquipeAttr = document.getElementById("opcoesEquipeAtribuir");
@@ -639,10 +814,20 @@ document.addEventListener("DOMContentLoaded", () => {
             if(selectEquipeAttr && wrapEquipeAttr) {
                 let optsEquipe = searchBox;
                 let equipeDB = window.todosEducandosBD.filter(a => a.turma === 'Equipe');
-                if(equipeDB.length === 0) optsEquipe += '<span class="custom-option" data-value="">Nenhum colaborador cadastrado.</span>';
+                if(equipeDB.length === 0) optsEquipe += '<span class="custom-option" data-value="">Nenhum colaborador.</span>';
                 else equipeDB.forEach(c => { optsEquipe += `<span class="custom-option" data-value="${c.nome}">${c.nome}</span>`; });
                 selectEquipeAttr.innerHTML = optsEquipe;
                 ativarEventosSelectCustomizado(wrapEquipeAttr);
+            }
+
+            const opcoesEducador = document.getElementById("opcoesEducadorDestino");
+            const wrapEdu = document.getElementById("wrapperEducadorDestino");
+            if(opcoesEducador && wrapEdu) {
+                let optsEdu = searchBox;
+                optsEdu += '<span class="custom-option" data-value="Sede">Devolver para Sede</span>';
+                window.mockEducadoresBD.forEach(e => { optsEdu += `<span class="custom-option" data-value="${e.nome}">${e.nome}</span>`; });
+                opcoesEducador.innerHTML = optsEdu;
+                ativarEventosSelectCustomizado(wrapEdu);
             }
         };
 
@@ -670,7 +855,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
         
-        // SUBMIT DO PARCEIRO
         const formCadastrarParceiro = document.getElementById("formCadastrarParceiro");
         if(formCadastrarParceiro) {
             formCadastrarParceiro.addEventListener("submit", (e) => {
@@ -691,7 +875,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // SUBMIT ATRIBUIÇÃO PARCEIRO
         const formAtribuirLoteParceiro = document.getElementById("formAtribuirLoteParceiro");
         if(formAtribuirLoteParceiro) {
             formAtribuirLoteParceiro.addEventListener("submit", (e) => {
@@ -716,7 +899,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // SUBMIT NOVO COLABORADOR (VENDAS DIRETAS)
         const formCadastrarColaborador = document.getElementById("formCadastrarColaborador");
         if(formCadastrarColaborador) {
             formCadastrarColaborador.addEventListener("submit", (e) => {
@@ -754,7 +936,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
         }
 
-        // SUBMIT ATRIBUIÇÃO LOTE EQUIPE
         const formAtribuirLoteEquipe = document.getElementById("formAtribuirLoteEquipe");
         if(formAtribuirLoteEquipe) {
             formAtribuirLoteEquipe.addEventListener("submit", (e) => {
@@ -775,13 +956,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         fecharModal('modalAtribuirLoteEquipe'); formAtribuirLoteEquipe.reset(); 
                         window.abrirModalSucesso("Lotes EQU atribuídos com sucesso!"); window.carregarDadosDoBanco(); 
                     } else window.abrirModalErro(data.message);
-                }).catch(() => { btn.disabled = false; btn.innerText = "Confirmar Atribuição"; window.abrirModalErro("Erro de rede."); });
+                }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
             });
         }
     }
 
     // ==========================================
-    // MODAIS E DISPARO DE TRANSAÇÕES UNIFICADAS
+    // MODAIS E TRANSAÇÕES GLOBAIS
     // ==========================================
     window.abrirModal = function(id) { document.getElementById(id).classList.add('active'); }
     window.fecharModal = function(id) { document.getElementById(id).classList.remove('active'); }
