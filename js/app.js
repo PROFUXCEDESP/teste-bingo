@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWD-pi7qf1Vlp01I8CO-7euJmqsNureruSEjeFc9bdYUZ_M13he6bqBC_ctJGHUpc4ow/exec'; 
     const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dliu0ck6y/image/upload'; 
     const CLOUDINARY_PRESET = 'bingo_2026';
+    const IMGBB_API_KEY = '699c158483746240a585454fdfb09cac';
     
     const userName = localStorage.getItem('usuarioLogado') || 'Administrador';
     
