@@ -72,6 +72,7 @@
                 <li class="nav-item" onclick="abrirModal('modalCadastrarParceiro')"><span class="material-symbols-outlined nav-icon">storefront</span> <span class="nav-text">Cadastrar Parceiro</span></li>
                 <li class="nav-item" onclick="abrirModal('modalAtribuirLoteParceiro')"><span class="material-symbols-outlined nav-icon">add_business</span> <span class="nav-text">Lote para Parceiro</span></li>
                 
+                <li class="nav-item" id="navParceiros" onclick="mudarAbaEducador('secParceiros', 'navParceiros')"><span class="material-symbols-outlined nav-icon">handshake</span> <span class="nav-text">Parceiros</span></li>
                 <li class="nav-item" id="navRankingAlunos" onclick="mudarAbaEducador('secRankingAlunos', 'navRankingAlunos')"><span class="material-symbols-outlined nav-icon">emoji_events</span> <span class="nav-text">Ranking Educandos</span></li>
                 <li class="nav-item" id="navRankingEducadores" onclick="mudarAbaEducador('secRankingEducadores', 'navRankingEducadores')"><span class="material-symbols-outlined nav-icon">school</span> <span class="nav-text">Ranking Educadores</span></li>
                 <li class="nav-item" id="navRankingEquipe" onclick="mudarAbaEducador('secRankingEquipe', 'navRankingEquipe')"><span class="material-symbols-outlined nav-icon">groups</span> <span class="nav-text">Ranking Equipe</span></li>
@@ -96,20 +97,34 @@
                         <button class="btn-primary" onclick="abrirModal('modalTransferirLote')"><span class="material-symbols-outlined">sync_alt</span> Transferir Lotes</button>
                     </div>
                     
-                    <div class="dashboard-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                        <div class="kpi-card" style="padding: 15px; text-align: center;"><div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Educandos</div><div class="kpi-value highlight-purple" id="kpiVendasEducandos" style="font-size: 1.4rem;">R$ 0,00</div></div>
-                        <div class="kpi-card" style="padding: 15px; text-align: center;"><div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Diretas</div><div class="kpi-value highlight-purple" id="kpiVendasEquipe" style="font-size: 1.4rem;">R$ 0,00</div></div>
-                        <div class="kpi-card" style="padding: 15px; text-align: center;"><div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Parceiros</div><div class="kpi-value highlight-purple" id="kpiVendasParceiros" style="font-size: 1.4rem;">R$ 0,00</div></div>
-                        <div class="kpi-card" style="background-color: #fdfdfd; padding: 15px; text-align: center;"><div class="kpi-title" style="font-size: 0.85rem; color: #777;">Projeção Global Restante</div><div class="kpi-value" style="color: var(--sunflower-gold); font-size: 1.4rem;" id="kpiProjecaoGlobal">R$ 0,00</div></div>
+                    <!-- LINHA 1: VENDAS POR CATEGORIA E PROJEÇÃO -->
+                    <div class="dashboard-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="kpi-card" style="padding: 15px; text-align: center;">
+                            <div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Educandos</div>
+                            <div class="kpi-value highlight-purple" id="kpiVendasEducandos" style="font-size: 1.4rem;">R$ 0,00</div>
+                        </div>
+                        <div class="kpi-card" style="padding: 15px; text-align: center;">
+                            <div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Diretas</div>
+                            <div class="kpi-value highlight-purple" id="kpiVendasEquipe" style="font-size: 1.4rem;">R$ 0,00</div>
+                        </div>
+                        <div class="kpi-card" style="padding: 15px; text-align: center;">
+                            <div class="kpi-title" style="font-size: 0.85rem; color: #777;">Vendas Parceiros</div>
+                            <div class="kpi-value highlight-purple" id="kpiVendasParceiros" style="font-size: 1.4rem;">R$ 0,00</div>
+                        </div>
+                        <div class="kpi-card" style="background-color: #fdfdfd; padding: 15px; text-align: center;">
+                            <div class="kpi-title" style="font-size: 0.85rem; color: #777;">Projeção Global Restante</div>
+                            <div class="kpi-value" style="color: var(--sunflower-gold); font-size: 1.4rem;" id="kpiProjecaoGlobal">R$ 0,00</div>
+                        </div>
                     </div>
                     
+                    <!-- LINHA 2: ARRECADAÇÃO GLOBAL DESTACADA -->
                     <div class="dashboard-grid" style="margin-bottom: 1.5rem; grid-template-columns: 1fr;">
                         <div class="kpi-card" style="text-align: center; padding: 2rem;">
                             <div class="kpi-title" style="font-size: 1.2rem; margin-bottom: 10px;">Arrecadação Global</div>
                             <div class="kpi-value highlight-purple" id="kpiVendasReaisGlobal" style="font-size: 2.8rem;">R$ 0,00</div>
                             <div style="margin-top: 15px; display: flex; justify-content: center; gap: 30px; font-weight: bold; font-size: 1.1rem;">
                                 <div style="color: var(--petal-pink);">PIX: <span id="kpiCaixaPix">R$ 0,00</span></div>
-                                <div style="color: var(--sunflower-gold);">Dinheiro: <span id="kpiCaixaDinheiro">R$ 0,00</span></div>
+                                <div style="color: #FF9800;">Dinheiro: <span id="kpiCaixaDinheiro">R$ 0,00</span></div>
                             </div>
                         </div>
                     </div>
@@ -133,6 +148,22 @@
                         </table>
                     </div>
                     <div id="pagLotes"></div>
+                </section>
+
+                <!-- SEÇÃO DE PARCEIROS (RESTAURADA) -->
+                <section id="secParceiros" style="display: none;">
+                    <h2 class="section-title">Gestão de Parceiros</h2>
+                    <div class="dashboard-grid" style="margin-bottom: 2rem;">
+                        <div class="kpi-card"><div class="kpi-title">Arrecadado Parceiros</div><div class="kpi-value highlight-purple" id="kpiParceirosArrecadado">R$ 0,00</div></div>
+                        <div class="kpi-card"><div class="kpi-title">Projetado Parceiros</div><div class="kpi-value" style="color: var(--sunflower-gold);" id="kpiParceirosProjetado">R$ 0,00</div></div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" style="width: 100%;">
+                            <thead><tr><th>Foto</th><th>Nome do Parceiro</th><th class="text-center">Lotes Consolidados</th><th class="text-center">Valor Arrecadado</th></tr></thead>
+                            <tbody id="tabelaParceirosLista"></tbody>
+                        </table>
+                    </div>
+                    <div id="pagParceiros"></div>
                 </section>
                 
                 <section id="secRankingAlunos" style="display: none;">
@@ -197,6 +228,7 @@
         </div>
     </div>
 
+    <!-- MODAIS DO SISTEMA -->
     <div class="modal-overlay" id="modalTransferirLote"><div class="modal-box" style="width: 90%; max-width: 450px;"><div class="modal-header"><h2>Transferir Lotes da Sede</h2><button class="close-modal-btn" onclick="fecharModal('modalTransferirLote')"><span class="material-symbols-outlined">close</span></button></div><div class="modal-body"><form id="formTransferirLote"><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Lotes Disponíveis:</label><div class="checkbox-list-container" id="listaLotesSede" style="margin-bottom: 15px;"></div></div><div class="form-group"><label style="color: var(--dim-grey); font-weight: bold; margin-bottom: 5px; display: block;">Para o Educador:</label><div class="custom-select-wrapper" id="wrapperEducadorDestino"><div class="custom-select"><div class="custom-select-trigger"><span class="trigger-text" style="color: var(--dim-grey);">Selecione o destino...</span><span class="material-symbols-outlined arrow-icon">expand_more</span></div><div class="custom-options" id="opcoesEducadorDestino"></div></div><input type="hidden" id="educadorDestinoVal" required></div></div><button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Confirmar Transferência</button></form></div></div></div>
     
     <div class="modal-overlay" id="modalDetalhesAluno">
