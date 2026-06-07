@@ -540,6 +540,44 @@ select.select-nativo { appearance: none; background-image: url("data:image/svg+x
 .page-input-discrete:focus { border-color: var(--petal-pink); }
 .data-table th, .data-table td { white-space: nowrap !important; }
 
+/* Força o estilo dos botões de paginação */
+.btn-page-discrete {
+    all: unset; /* Remove qualquer estilização herdada */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    margin: 0 5px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    color: var(--petal-pink) !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+/* Hover */
+.btn-page-discrete:hover:not(:disabled) {
+    background-color: var(--petal-pink) !important;
+    color: #ffffff !important;
+    border-color: var(--petal-pink) !important;
+}
+
+/* Desabilitado */
+.btn-page-discrete:disabled {
+    background-color: #f4f4f4 !important;
+    color: #ccc !important;
+    border-color: #e0e0e0 !important;
+    cursor: not-allowed !important;
+}
+
+
+
+
+
 /* Tira a barra de rolagem dos modais curtos e deixa a caixa esticar */
 #modalAcaoLote .modal-body,
 #modalAtribuirLote .modal-body,
