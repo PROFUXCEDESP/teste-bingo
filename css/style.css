@@ -22,7 +22,12 @@
   --radius-lg: 20px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; 
+   box-sizing: border-box;
+   -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;     /* IE 10 and IE 11 */
+    user-select: none;         /* Padrão moderno */
+    outline: none;             /* Remove o contorno azul de foco em botões */ }
 body { font-family: var(--font-main); background-color: var(--bg-color); color: var(--dim-grey); }
 ::selection { background-color: var(--petal-pink); color: var(--white); }
 body:not(.dashboard-body) { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
