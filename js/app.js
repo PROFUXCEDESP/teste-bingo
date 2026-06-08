@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.registrarLog = function(acao, detalhe) {
         const dataHora = new Date().toLocaleString('pt-BR');
         const sessao = window.innerWidth <= 768 ? 'Mobile' : 'Desktop';
+        
         window.logsDoSistema.push({ 'Data/Hora': dataHora, 'Responsavel': userName, 'Sessão_Dispositivo': sessao, 'Ação_Registrada': acao, 'Detalhes': detalhe });
         if(document.getElementById('tabelaLogs') && window.renderLogsPaginado) window.renderLogsPaginado();
         
@@ -518,225 +519,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if(srchLotes) srchLotes.addEventListener('input', (e) => { window.pages.gestaoLotes.term = e.target.value; window.pages.gestaoLotes.current = 1; window.renderGestaoLotesPaginado(); });
 
     // ==========================================
-    // FORMULÁRIOS DE CADASTRO COMUNS (ADMs E EDUCADORES)
-    // ==========================================
-    const formCadastrarEducando = document.getElementById("formCadastrarEducando");
-    if(formCadastrarEducando) {
-        formCadastrarEducando.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const btn = formCadastrarEducando.querySelector("button[type='submit']");
-            btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
-
-            const nome = document.getElementById("nomeSelectEducando").value;
-            const turmaTexto = document.getElementById("turmaSelectEducando").value; 
-            if(!nome || !turmaTexto) { btn.disabled = false; btn.innerText = "Ativar Educando"; return window.abrirModalErro("Preencha todos os campos."); }
-            let periodo = (turmaTexto === "Turma 3" || turmaTexto === "Turma 4") ? "Tarde" : "Manhã";
-
-            if(window.fotoFileGlobal && window.tipoCadastroFoto === 'aluno') {
-                const formData = new FormData(); 
-                formData.append('file', window.fotoFileGlobal); 
-                formData.append('upload_preset', CLOUDINARY_PRESET);
-                
-                fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
-                .then(r => r.json()).then(dataImg => {
-                    if(dataImg.secure_url) { salvarEducandoBanco(nome, turmaTexto, periodo, dataImg.secure_url, btn); } 
-                    else { window.abrirModalErro("Falha no Cloudinary"); btn.innerText = "Ativar Educando"; btn.disabled = false; }
-                }).catch(() => { window.abrirModalErro("Erro de rede."); btn.innerText = "Ativar Educando"; btn.disabled = false; });
-            } else { salvarEducandoBanco(nome, turmaTexto, periodo, "", btn); }
-        });
-    }
-
-    function salvarEducandoBanco(nome, turmaTexto, periodo, fotoUrl, btn) {
-        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_educando', nome: nome, turma: turmaTexto, periodo: periodo, educadorResponsavel: userName, fotoUrl: fotoUrl })
-        }).then(res => res.json()).then(data => {
-            btn.innerText = "Ativar Educando"; btn.disabled = false;
-            if(data.success) {
-                window.registrarLog("Cadastro", `Ativou e vinculou foto ao aluno ${nome}`);
-                fecharModal('modalCadastrarEducando'); 
-                const form = document.getElementById("formCadastrarEducando");
-                if(form) form.reset();
-                window.fotoFileGlobal = null; document.getElementById('previewFoto').style.display = 'none'; document.getElementById('iconCamera').style.display = 'block';
-                window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
-            } else { window.abrirModalErro(data.message); }
-        }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
-    }
-
-    const formAtribuirLote = document.getElementById("formAtribuirLote");
-    if(formAtribuirLote) {
-        formAtribuirLote.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const alunoInput = document.getElementById("alunoAtribuirSelect").value;
-            const checkboxesMarcados = document.querySelectorAll('#listaLotesCheckboxes input[type="checkbox"]:checked');
-            const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
-
-            if(!alunoInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o aluno e marque pelo menos um lote.");
-            const btn = formAtribuirLote.querySelector("button[type='submit']");
-            btn.innerText = "Atribuindo..."; btn.disabled = true;
-
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote', nomeAluno: alunoInput, lotes: lotesArray }) })
-            .then(res => res.json()).then(data => {
-                btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
-                if(data.success) {
-                    window.registrarLog("Atribuição de Lote", `Atribuiu os lotes ${lotesArray.join(', ')} para ${alunoInput}`);
-                    fecharModal('modalAtribuirLote'); formAtribuirLote.reset(); window.abrirModalSucesso("Lotes atribuídos!"); window.carregarDadosDoBanco(); 
-                } else { window.abrirModalErro(data.message); }
-            }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
-        });
-    }
-
-    const formTransferirLote = document.getElementById("formTransferirLote");
-    if(formTransferirLote) {
-        formTransferirLote.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const dest = document.getElementById("educadorDestinoVal").value;
-            const checkboxes = document.querySelectorAll('#listaLotesSede input[type="checkbox"]:checked');
-            const lotesSel = Array.from(checkboxes).map(cb => cb.value);
-
-            if(!dest || lotesSel.length === 0) return window.abrirModalErro("Selecione os lotes e o destino.");
-            const btn = formTransferirLote.querySelector("button[type='submit']");
-            btn.innerText = "Transferindo..."; btn.disabled = true;
-
-            window.registrarLog("Transferência (Sede)", `Moveu lotes ${lotesSel.join(', ')} para o destino: ${dest}`);
-            lotesSel.forEach(cod => { let l = window.lotesSedeBD.find(x => x.codigo === cod); if(l) l.educador = (dest === 'Sede' ? '' : dest); });
-            
-            fecharModal('modalTransferirLote'); window.abrirModalSucesso("Transferência realizada!");
-            if(document.getElementById("adminPage")) window.atualizarDashboardsADM(); 
-            formTransferirLote.reset();
-
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'transferir_lotes', lotes: lotesSel, educadorDestino: dest === 'Sede' ? '' : dest }) })
-            .then(() => { btn.innerText = "Confirmar Transferência"; btn.disabled = false; })
-            .catch(err => { console.error(err); btn.disabled = false; });
-        });
-    }
-
-    const formCadastrarParceiro = document.getElementById("formCadastrarParceiro");
-    if(formCadastrarParceiro) {
-        formCadastrarParceiro.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const btn = formCadastrarParceiro.querySelector("button[type='submit']");
-            btn.innerText = "Salvando..."; btn.disabled = true;
-            const nome = document.getElementById("nomeParceiroInput").value;
-            
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_parceiro', nome, cartela: "" })
-            }).then(res => res.json()).then(data => {
-                btn.innerText = "Salvar Parceiro"; btn.disabled = false;
-                if(data.success) {
-                    window.registrarLog("Cadastro Parceiro", `Cadastrou parceiro comercial ${nome}`);
-                    fecharModal('modalCadastrarParceiro'); formCadastrarParceiro.reset();
-                    window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
-                } else window.abrirModalErro(data.message);
-            }).catch(() => { btn.disabled = false; btn.innerText = "Salvar Parceiro"; });
-        });
-    }
-
-    const formAtribuirLoteParceiro = document.getElementById("formAtribuirLoteParceiro");
-    if(formAtribuirLoteParceiro) {
-        formAtribuirLoteParceiro.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const nomeInput = document.getElementById("parceiroAtribuirSelect").value;
-            const checkboxesMarcados = document.querySelectorAll('#listaLotesParceirosCheckboxes input[type="checkbox"]:checked');
-            const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
-
-            if(!nomeInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o parceiro e marque pelo menos um lote PARC.");
-            const btn = formAtribuirLoteParceiro.querySelector("button[type='submit']");
-            btn.innerText = "Atribuindo..."; btn.disabled = true;
-
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote_parceiro', nome: nomeInput, lotes: lotesArray }) })
-            .then(res => res.json()).then(data => {
-                btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
-                if(data.success) {
-                    window.registrarLog("Atribuição Parceiro", `Atribuiu lotes ${lotesArray.join(', ')} para o parceiro ${nomeInput}`);
-                    fecharModal('modalAtribuirLoteParceiro'); formAtribuirLoteParceiro.reset(); 
-                    window.abrirModalSucesso("Lotes PARC atribuídos com sucesso!"); window.carregarDadosDoBanco(); 
-                } else window.abrirModalErro(data.message);
-            }).catch(() => { btn.disabled = false; btn.innerText = "Confirmar Atribuição"; });
-        });
-    }
-
-    const formCadastrarColaborador = document.getElementById("formCadastrarColaborador");
-    if(formCadastrarColaborador) {
-        formCadastrarColaborador.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const btn = formCadastrarColaborador.querySelector("button[type='submit']");
-            btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
-            const nome = document.getElementById("nomeColaboradorInput").value;
-
-            if(window.fotoFileGlobal && window.tipoCadastroFoto === 'colaborador') {
-                const formData = new FormData(); 
-                formData.append('file', window.fotoFileGlobal); 
-                formData.append('upload_preset', CLOUDINARY_PRESET);
-                
-                fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
-                .then(r => r.json()).then(dataImg => {
-                    if(dataImg.secure_url) { salvarColaboradorBanco(nome, dataImg.secure_url, btn); } 
-                    else { window.abrirModalErro("Falha na imagem"); btn.innerText = "Salvar Colaborador"; btn.disabled = false; }
-                }).catch(() => { window.abrirModalErro("Erro de rede."); btn.innerText = "Salvar Colaborador"; btn.disabled = false; });
-            } else { salvarColaboradorBanco(nome, "", btn); }
-        });
-    }
-
-    function salvarColaboradorBanco(nome, fotoUrl, btn) {
-        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_colaborador_vendedor', nome: nome, cargo: 'Colaborador', fotoUrl: fotoUrl })
-        }).then(res => res.json()).then(data => {
-            btn.innerText = "Salvar Colaborador"; btn.disabled = false;
-            if(data.success) {
-                window.registrarLog("Cadastro Colaborador", `Cadastrou o colaborador de vendas diretas ${nome}`);
-                fecharModal('modalCadastrarColaborador'); 
-                const form = document.getElementById("formCadastrarColaborador");
-                if(form) form.reset();
-                window.fotoFileGlobal = null; 
-                if(document.getElementById('previewFotoColaborador')) document.getElementById('previewFotoColaborador').style.display = 'none'; 
-                if(document.getElementById('iconCameraColaborador')) document.getElementById('iconCameraColaborador').style.display = 'block';
-                window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
-            } else { window.abrirModalErro(data.message); }
-        }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
-    }
-
-    const formAtribuirLoteEquipe = document.getElementById("formAtribuirLoteEquipe");
-    if(formAtribuirLoteEquipe) {
-        formAtribuirLoteEquipe.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const nomeInput = document.getElementById("equipeAtribuirSelect").value;
-            const checkboxesMarcados = document.querySelectorAll('#listaLotesEquipeCheckboxes input[type="checkbox"]:checked');
-            const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
-
-            if(!nomeInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o colaborador e marque pelo menos um lote EQU.");
-            const btn = formAtribuirLoteEquipe.querySelector("button[type='submit']");
-            btn.innerText = "Atribuindo..."; btn.disabled = true;
-
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote', nomeAluno: nomeInput, lotes: lotesArray }) })
-            .then(res => res.json()).then(data => {
-                btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
-                if(data.success) {
-                    window.registrarLog("Atribuição Equipe", `Atribuiu lotes ${lotesArray.join(', ')} para o colaborador ${nomeInput}`);
-                    fecharModal('modalAtribuirLoteEquipe'); formAtribuirLoteEquipe.reset(); 
-                    window.abrirModalSucesso("Lotes EQU atribuídos com sucesso!"); window.carregarDadosDoBanco(); 
-                } else window.abrirModalErro(data.message);
-            }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
-        });
-    }
-
-    const formCadastrarEducador = document.getElementById("formCadastrarEducador");
-    if(formCadastrarEducador) {
-        formCadastrarEducador.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const btn = formCadastrarEducador.querySelector("button[type='submit']");
-            btn.innerText = "Salvando..."; btn.disabled = true;
-            const nome = document.getElementById("novoNomeEducador").value;
-            const curso = document.getElementById("novoCursoEducador").value;
-            
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_educador', nome, curso })
-            }).then(res => res.json()).then(data => {
-                btn.innerText = "Salvar Educador"; btn.disabled = false;
-                if(data.success) {
-                    fecharModal('modalCadastrarEducador'); formCadastrarEducador.reset();
-                    window.abrirModalSucesso("Educador cadastrado!"); window.carregarDadosDoBanco();
-                } else window.abrirModalErro(data.message);
-            }).catch(() => { btn.disabled = false; btn.innerText = "Salvar Educador"; });
-        });
-    }
-
-    // ==========================================
     // SEÇÃO DO EDUCADOR
     // ==========================================
     const educadorPage = document.getElementById("educadorPage");
@@ -848,10 +630,74 @@ document.addEventListener("DOMContentLoaded", () => {
                 listaLotes.innerHTML = htmlLotes || '<div style="padding: 15px; color:#a0a0a0; text-align:center;">Nenhum lote liberado para você na Sede.</div>';
             }
         };
+
+        const formCadastrarEducando = document.getElementById("formCadastrarEducando");
+        if(formCadastrarEducando) {
+            formCadastrarEducando.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const btn = formCadastrarEducando.querySelector("button[type='submit']");
+                btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
+
+                const nome = document.getElementById("nomeSelectEducando").value;
+                const turmaTexto = document.getElementById("turmaSelectEducando").value; 
+                if(!nome || !turmaTexto) { btn.disabled = false; btn.innerText = "Ativar Educando"; return window.abrirModalErro("Preencha todos os campos."); }
+                let periodo = (turmaTexto === "Turma 3" || turmaTexto === "Turma 4") ? "Tarde" : "Manhã";
+
+                if(window.fotoFileGlobal && window.tipoCadastroFoto === 'aluno') {
+                    const formData = new FormData(); 
+                    formData.append('file', window.fotoFileGlobal); 
+                    formData.append('upload_preset', CLOUDINARY_PRESET);
+                    
+                    fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+                    .then(r => r.json()).then(dataImg => {
+                        if(dataImg.secure_url) { salvarEducandoBanco(nome, turmaTexto, periodo, dataImg.secure_url, btn); } 
+                        else { window.abrirModalErro("Falha no Cloudinary"); btn.innerText = "Ativar Educando"; btn.disabled = false; }
+                    }).catch(() => { window.abrirModalErro("Erro de rede."); btn.innerText = "Ativar Educando"; btn.disabled = false; });
+                } else { salvarEducandoBanco(nome, turmaTexto, periodo, "", btn); }
+            });
+        }
+
+        function salvarEducandoBanco(nome, turmaTexto, periodo, fotoUrl, btn) {
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_educando', nome: nome, turma: turmaTexto, periodo: periodo, educadorResponsavel: userName, fotoUrl: fotoUrl })
+            }).then(res => res.json()).then(data => {
+                btn.innerText = "Ativar Educando"; btn.disabled = false;
+                if(data.success) {
+                    window.registrarLog("Cadastro", `Ativou e vinculou foto ao aluno ${nome}`);
+                    fecharModal('modalCadastrarEducando'); 
+                    const form = document.getElementById("formCadastrarEducando");
+                    if(form) form.reset();
+                    window.fotoFileGlobal = null; document.getElementById('previewFoto').style.display = 'none'; document.getElementById('iconCamera').style.display = 'block';
+                    window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
+                } else { window.abrirModalErro(data.message); }
+            }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+        }
+
+        const formAtribuirLote = document.getElementById("formAtribuirLote");
+        if(formAtribuirLote) {
+            formAtribuirLote.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const alunoInput = document.getElementById("alunoAtribuirSelect").value;
+                const checkboxesMarcados = document.querySelectorAll('#listaLotesCheckboxes input[type="checkbox"]:checked');
+                const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
+
+                if(!alunoInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o aluno e marque pelo menos um lote.");
+                const btn = formAtribuirLote.querySelector("button[type='submit']");
+                btn.innerText = "Atribuindo..."; btn.disabled = true;
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote', nomeAluno: alunoInput, lotes: lotesArray }) })
+                .then(res => res.json()).then(data => {
+                    btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
+                    if(data.success) {
+                        window.registrarLog("Atribuição de Lote", `Atribuiu os lotes ${lotesArray.join(', ')} para ${alunoInput}`);
+                        fecharModal('modalAtribuirLote'); formAtribuirLote.reset(); window.abrirModalSucesso("Lotes atribuídos!"); window.carregarDadosDoBanco(); 
+                    } else { window.abrirModalErro(data.message); }
+                }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+            });
+        }
     }
 
     // ==========================================
-    // SEÇÃO DO ADMINISTRADOR
+    // SEÇÃO DO ADMINISTRADOR (BLINDADA CONTRA CRASHES)
     // ==========================================
     const adminPage = document.getElementById("adminPage");
     if (adminPage) {
@@ -981,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let htmlLotes = '';
                 let lotesEmUso = [];
                 window.todosParceirosBD.forEach(p => { lotesEmUso.push(...p.lotesPendentes); lotesEmUso.push(...p.lotesVendidos); });
-                window.todosEducandosBD.forEach(a => { lotesEmUso.push(...a.lotesPendentes); lotesEmUso.push(...a.lotesVendidos); }); // Proteção contra duplicidade
+                window.todosEducandosBD.forEach(a => { lotesEmUso.push(...a.lotesPendentes); lotesEmUso.push(...a.lotesVendidos); }); 
                 const lotesFiltrados = window.lotesSedeBD.filter(l => l.codigo.toUpperCase().includes('PARC'));
                 lotesFiltrados.forEach(l => {
                     if(lotesEmUso.includes(l.codigo)) {
@@ -1042,6 +888,137 @@ document.addEventListener("DOMContentLoaded", () => {
                 ativarEventosSelectCustomizado(wrapEdu);
             }
         };
+
+        const formTransferirLote = document.getElementById("formTransferirLote");
+        if(formTransferirLote) {
+            formTransferirLote.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const dest = document.getElementById("educadorDestinoVal").value;
+                const checkboxes = document.querySelectorAll('#listaLotesSede input[type="checkbox"]:checked');
+                const lotesSel = Array.from(checkboxes).map(cb => cb.value);
+
+                if(!dest || lotesSel.length === 0) return window.abrirModalErro("Selecione os lotes e o destino.");
+                const btn = formTransferirLote.querySelector("button[type='submit']");
+                btn.innerText = "Transferindo..."; btn.disabled = true;
+
+                window.registrarLog("Transferência (Sede)", `Moveu lotes ${lotesSel.join(', ')} para o destino: ${dest}`);
+                lotesSel.forEach(cod => { let l = window.lotesSedeBD.find(x => x.codigo === cod); if(l) l.educador = (dest === 'Sede' ? '' : dest); });
+                
+                fecharModal('modalTransferirLote'); window.abrirModalSucesso("Transferência realizada!");
+                window.atualizarDashboardsADM(); formTransferirLote.reset();
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'transferir_lotes', lotes: lotesSel, educadorDestino: dest === 'Sede' ? '' : dest }) })
+                .then(() => { btn.innerText = "Confirmar Transferência"; btn.disabled = false; })
+                .catch(err => { console.error(err); btn.disabled = false; });
+            });
+        }
+        
+        const formCadastrarParceiro = document.getElementById("formCadastrarParceiro");
+        if(formCadastrarParceiro) {
+            formCadastrarParceiro.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const btn = formCadastrarParceiro.querySelector("button[type='submit']");
+                btn.innerText = "Salvando..."; btn.disabled = true;
+                const nome = document.getElementById("nomeParceiroInput").value;
+                
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_parceiro', nome, cartela: "" })
+                }).then(res => res.json()).then(data => {
+                    btn.innerText = "Salvar Parceiro"; btn.disabled = false;
+                    if(data.success) {
+                        window.registrarLog("Cadastro Parceiro", `Cadastrou parceiro comercial ${nome}`);
+                        fecharModal('modalCadastrarParceiro'); formCadastrarParceiro.reset();
+                        window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
+                    } else window.abrirModalErro(data.message);
+                }).catch(() => { btn.disabled = false; btn.innerText = "Salvar Parceiro"; });
+            });
+        }
+
+        const formAtribuirLoteParceiro = document.getElementById("formAtribuirLoteParceiro");
+        if(formAtribuirLoteParceiro) {
+            formAtribuirLoteParceiro.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const nomeInput = document.getElementById("parceiroAtribuirSelect").value;
+                const checkboxesMarcados = document.querySelectorAll('#listaLotesParceirosCheckboxes input[type="checkbox"]:checked');
+                const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
+
+                if(!nomeInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o parceiro e marque pelo menos um lote PARC.");
+                const btn = formAtribuirLoteParceiro.querySelector("button[type='submit']");
+                btn.innerText = "Atribuindo..."; btn.disabled = true;
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote_parceiro', nome: nomeInput, lotes: lotesArray }) })
+                .then(res => res.json()).then(data => {
+                    btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
+                    if(data.success) {
+                        window.registrarLog("Atribuição Parceiro", `Atribuiu lotes ${lotesArray.join(', ')} para o parceiro ${nomeInput}`);
+                        fecharModal('modalAtribuirLoteParceiro'); formAtribuirLoteParceiro.reset(); 
+                        window.abrirModalSucesso("Lotes PARC atribuídos com sucesso!"); window.carregarDadosDoBanco(); 
+                    } else window.abrirModalErro(data.message);
+                }).catch(() => { btn.disabled = false; btn.innerText = "Confirmar Atribuição"; });
+            });
+        }
+
+        const formCadastrarColaborador = document.getElementById("formCadastrarColaborador");
+        if(formCadastrarColaborador) {
+            formCadastrarColaborador.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const btn = formCadastrarColaborador.querySelector("button[type='submit']");
+                btn.innerText = "Enviando para Nuvem..."; btn.disabled = true;
+                const nome = document.getElementById("nomeColaboradorInput").value;
+
+                if(window.fotoFileGlobal && window.tipoCadastroFoto === 'colaborador') {
+                    const formData = new FormData(); 
+                    formData.append('file', window.fotoFileGlobal); 
+                    formData.append('upload_preset', CLOUDINARY_PRESET);
+                    
+                    fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+                    .then(r => r.json()).then(dataImg => {
+                        if(dataImg.secure_url) { salvarColaboradorBanco(nome, dataImg.secure_url, btn); } 
+                        else { window.abrirModalErro("Falha na imagem"); btn.innerText = "Salvar Colaborador"; btn.disabled = false; }
+                    }).catch(() => { window.abrirModalErro("Erro de rede."); btn.innerText = "Salvar Colaborador"; btn.disabled = false; });
+                } else { salvarColaboradorBanco(nome, "", btn); }
+            });
+        }
+
+        function salvarColaboradorBanco(nome, fotoUrl, btn) {
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'cadastrar_colaborador_vendedor', nome: nome, cargo: 'Colaborador', fotoUrl: fotoUrl })
+            }).then(res => res.json()).then(data => {
+                btn.innerText = "Salvar Colaborador"; btn.disabled = false;
+                if(data.success) {
+                    window.registrarLog("Cadastro Colaborador", `Cadastrou o colaborador de vendas diretas ${nome}`);
+                    fecharModal('modalCadastrarColaborador'); 
+                    const form = document.getElementById("formCadastrarColaborador");
+                    if(form) form.reset();
+                    window.fotoFileGlobal = null; 
+                    if(document.getElementById('previewFotoColaborador')) document.getElementById('previewFotoColaborador').style.display = 'none'; 
+                    if(document.getElementById('iconCameraColaborador')) document.getElementById('iconCameraColaborador').style.display = 'block';
+                    window.abrirModalSucesso(data.message); window.carregarDadosDoBanco();
+                } else { window.abrirModalErro(data.message); }
+            }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+        }
+
+        const formAtribuirLoteEquipe = document.getElementById("formAtribuirLoteEquipe");
+        if(formAtribuirLoteEquipe) {
+            formAtribuirLoteEquipe.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const nomeInput = document.getElementById("equipeAtribuirSelect").value;
+                const checkboxesMarcados = document.querySelectorAll('#listaLotesEquipeCheckboxes input[type="checkbox"]:checked');
+                const lotesArray = Array.from(checkboxesMarcados).map(cb => cb.value);
+
+                if(!nomeInput || lotesArray.length === 0) return window.abrirModalErro("Selecione o colaborador e marque pelo menos um lote EQU.");
+                const btn = formAtribuirLoteEquipe.querySelector("button[type='submit']");
+                btn.innerText = "Atribuindo..."; btn.disabled = true;
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'atribuir_lote', nomeAluno: nomeInput, lotes: lotesArray }) })
+                .then(res => res.json()).then(data => {
+                    btn.innerText = "Confirmar Atribuição"; btn.disabled = false;
+                    if(data.success) {
+                        window.registrarLog("Atribuição Equipe", `Atribuiu lotes ${lotesArray.join(', ')} para o colaborador ${nomeInput}`);
+                        fecharModal('modalAtribuirLoteEquipe'); formAtribuirLoteEquipe.reset(); 
+                        window.abrirModalSucesso("Lotes EQU atribuídos com sucesso!"); window.carregarDadosDoBanco(); 
+                    } else window.abrirModalErro(data.message);
+                }).catch(() => { btn.disabled = false; window.abrirModalErro("Erro de rede."); });
+            });
+        }
     }
 
     // ==========================================
